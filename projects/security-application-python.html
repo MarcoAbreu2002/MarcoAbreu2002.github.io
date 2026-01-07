@@ -4,6 +4,33 @@
     <meta charset="UTF-8">
     <title>Security Application in Python | Marco Abreu</title>
     <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Extra styling for project page */
+        .features-list, .installation-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li::before {
+            content: "▹";
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+        .installation-list li::before {
+            content: "💻";
+            margin-right: 8px;
+        }
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        pre code.input { color: #ffd86f; }
+        pre code.output { color: #00ffff; }
+        h3 { margin-top: 40px; }
+    </style>
 </head>
 <body>
 
@@ -26,10 +53,8 @@
             offensive and defensive cybersecurity in controlled and authorized environments.
         </p>
 
-        <br>
-
         <h3>🔐 Implemented Features</h3>
-        <ul>
+        <ul class="features-list">
             <li><strong>Detection and listing of available network ports</strong> on remote machines</li>
             <li><strong>UDP Flood (DoS) attack simulation</strong> against a remote IP using Scapy</li>
             <li><strong>TCP SYN Flood attack</strong> against services such as HTTP or SMTP</li>
@@ -38,38 +63,17 @@
             <li><strong>Client-side port knocking system</strong> for SSH and L2TP/IPSec access</li>
         </ul>
 
-        <br>
-
         <h3>📦 Installation</h3>
-
-        <p>
-            The project repository is available on GitHub:
-        </p>
-
-        <p>
-            🔗 <a href="https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD" target="_blank">
-                https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD
-            </a>
-        </p>
-
-        <p><strong>Linux users:</strong></p>
-        <pre><code>chmod +x requirements.sh
-./requirements.sh</code></pre>
-
-        <p><strong>Windows users:</strong></p>
-        <pre><code>requirements_windows.bat</code></pre>
-
-        <p>
-            Ensure you have administrator privileges and are using the
-            <strong>latest version of Python 3</strong>.
-        </p>
-
-        <pre><code>python3 main.py</code></pre>
-
-        <br>
+        <ul class="installation-list">
+            <li>GitHub Repository: <a href="https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD" target="_blank">https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD</a></li>
+            <li>Linux: <pre><code class="command">chmod +x requirements.sh
+./requirements.sh</code></pre></li>
+            <li>Windows: <pre><code class="command">requirements_windows.bat</code></pre></li>
+            <li>Run the main program: <pre><code class="command">python3 main.py</code></pre></li>
+        </ul>
 
         <h3>🖥️ Main Menu</h3>
-        <pre><code>************Computer Security Application**************
+        <pre><code class="output">************Computer Security Application**************
 
 A: Available Network Ports
 B: UDP flood (DoS)
@@ -86,17 +90,18 @@ Q: Quit
             with configurable port ranges and connectivity levels.
         </p>
 
-        <pre><code>
+        <pre><code class="output">
 ************Computer Security Application**************
 
                A: Available Network Ports
                B: UDP flood (DoS)
                C: SYN flood (TCP SYN)
                D: Encrypted Chat
-               Q: Quit
+               Q: Quit</code>
 
-               Choose the desired option: A
-Running available-ports.py...
+               <code class="input">Choose the desired option: A</code>
+<code class="command">Running available-ports.py...</code>
+<code class="output">
 ************************************************************
         Port Scanner
  
@@ -106,8 +111,8 @@ Running available-ports.py...
          Enter the last port number     99999
 Range not OK
 Setting last port to 65535
-Low connectivity = L | High connectivity = H    H
-
+<code class="input">Low connectivity = L | High connectivity = H    H</code>
+<code class="output">
 Scanning in progress...  192.168.1.10
 ************************************************************
 Port Open:-->    9200 -- Elasticsearch — default Elasticsearch port - Unofficial TCP
