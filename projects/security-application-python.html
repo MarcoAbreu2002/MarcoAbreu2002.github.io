@@ -65,7 +65,7 @@
 
         <h3>📦 Installation</h3>
         <ul class="installation-list">
-            <li>GitHub Repository: <a href="https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD" target="_blank">https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD</a></li>
+            <li>Clone GitHub Repository: <pre><code class="command">https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD</code></pre></li>
             <li>Linux: <pre><code class="command">chmod +x requirements.sh
 ./requirements.sh</code></pre></li>
             <li>Windows: <pre><code class="command">requirements_windows.bat</code></pre></li>
@@ -217,34 +217,34 @@ Sent 500 packets successfully.
 #!/bin/bash
 
 ### Clear existing rules and custom chains
-                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -X
 iptables -F
 iptables -X INTO-P2
 iptables -X INTO-P3
 iptables -X INTO-P4
 </code>
-            <code>
+<code>
 # Accept established and related connections to allow return traffic
-                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INPUT -p tcp --dport 22 -m state --state ESTABLISHED -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -m state --state RELATED -j ACCEPT
 </code>
-            <code>
+<code>
 # Create new chains to control the program flow
-                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -N INTO-P2
 iptables -N INTO-P3
 iptables -N INTO-P4
 </code>
-            <code>
+<code>
 # Rules to move connections from one stage to another, tracking them with names
 # P1 - P2 - P3 - P4
-                                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INTO-P2 -m recent --name P1 --remove
 iptables -A INTO-P2 -m recent --name P2 --set
 iptables -A INTO-P2 -j LOG --log-prefix "INTO P2: "
@@ -257,39 +257,39 @@ iptables -A INTO-P4 -m recent --name P3 --remove
 iptables -A INTO-P4 -m recent --name P4 --set
 iptables -A INTO-P4 -j LOG --log-prefix "INTO P4: "
 </code>
-            <code>
+<code>
 # Update the last time the P1 connection was seen
-                                                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INPUT -m recent --update --name P1
 </code>
-            <code>
+<code>
 # Define the sequence of ports that must be accessed in a specific order
 # To allow access to the SSH port
 # If the sequence is broken, access rules will be rejected
-                                                                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INPUT -p tcp --dport 6666 -m recent --name P1 --set
 iptables -A INPUT -p tcp --dport 7777 -m recent --rcheck --seconds 10 --name P1 -j INTO-P2
 iptables -A INPUT -p tcp --dport 8888 -m recent --rcheck --seconds 10 --name P2 -j INTO-P3
 iptables -A INPUT -p tcp --dport 9999 -m recent --rcheck --seconds 10 --name P3 -j INTO-P4
 </code>
-            <code>
+<code>
 # If the sequence is complete (P1 → P2 → P3 → P4), the SSH port will be opened
-                                                                                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INPUT -p tcp --dport 22 -m recent --rcheck --seconds 10 --name P4 -j ACCEPT
 </code>
-            <code>
+<code>
 # Open L2TP/IPSec port (1701) if the sequence is respected
-                                                                                                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INPUT -p udp --dport 1701 -m recent --rcheck --seconds 10 --name P4 -j ACCEPT
 </code>
-            <code>
+<code>
 # Default rule to reject new SSH connections if the sequence is not respected
-                                                                                                                                                            </code>
-            <code class="output">
+</code>
+<code class="output">
 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j DROP
 </code></pre>
 
@@ -300,18 +300,11 @@ iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j DROP
 
         <br>
 
-        <h3>⚠️ Ethical Notice</h3>
-        <p>
-            All offensive security features were developed and tested exclusively
-            in controlled, local, and authorized environments
-            for academic and educational purposes.
-        </p>
-
     </div>
 </section>
 
 <footer>
-    <p>Designed & Built by Marco Abreu. &copy; 2026</p>
+    <p>Marco Abreu &copy; 2026</p>
 </footer>
 
 </body>
