@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WindowsLiveForensicCollect | Marco Abreu</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Extra styling for project page */
+        .features-list, .requirements-list, .installation-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li::before { content: "▹"; color: var(--accent-color); margin-right: 8px; }
+        .requirements-list li::before { content: "🖥️"; margin-right: 8px; }
+        .installation-list li::before { content: "💻"; margin-right: 8px; }
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        pre code.input { color: #ffd86f; }
+        pre code.output { color: #00ffff; }
+        h3 { margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">&lt;MarcoAbreu /&gt;</div>
+    <ul class="nav-links">
+        <li><a href="../index.html#projects">← Back to Projects</a></li>
+    </ul>
+</nav>
+
+<section class="section">
+    <div class="container">
+
+        <h2 class="section-title">WindowsLiveForensicCollect</h2>
+
+        <p>
+            <strong>WindowsLiveForensicCollect</strong> is a PowerShell script designed for live forensic data collection on Windows systems.
+            It allows incident responders and forensic analysts to gather crucial volatile and non-volatile data without altering the system state.
+        </p>
+
+        <h3>🔐 Features</h3>
+        <ul class="features-list">
+            <li>Live forensic data collection from running Windows machines</li>
+            <li>Volatile data: running processes, network connections, open files</li>
+            <li>Non-volatile data: installed software, user accounts, system configurations</li>
+            <li>PowerShell script for seamless Windows integration</li>
+            <li>Customizable output paths for collected data</li>
+        </ul>
+
+        <h3>🖥️ Requirements</h3>
+        <ul class="requirements-list">
+            <li>Operating System: Windows 7 or higher</li>
+            <li>PowerShell version 5.0 or higher</li>
+        </ul>
+
+        <h3>📦 Installation</h3>
+        <ul class="installation-list">
+            <li>Clone the repository:
+                <pre><code class="command">git clone https://github.com/MarcoAbreu2002/WindowsLiveForensicCollect.git
+cd WindowsLiveForensicCollect</code></pre>
+            </li>
+        </ul>
+
+        <h3>⚡ Usage</h3>
+        <p>Run the main script and specify the destination folder:</p>
+        <pre><code class="command">./main.ps1</code></pre>
+        <p>Choose the type of collection or select "Run All" to capture all available data.</p>
+
+        <h3>🗂️ Example Menu Options</h3>
+        <pre><code class="output">
+Select an option:
+1  - Collect Volatile Fragment Windows
+2  - Collect Routing Table, ARP Cache, and Kernel Statistics
+3  - Collect DNS Cache
+4  - Collect Running Processes
+5  - Collect Active Network Connections
+6  - Collect Programs Using Network
+7  - Collect Open Files
+8  - Collect Network Shares
+9  - Collect Open Ports
+...
+30 - Run All
+31 - Exit
+        </code></pre>
+
+        <h3>💾 Sample Collected Data</h3>
+        <p>Files generated in the destination folder might include:</p>
+        <ul class="features-list">
+            <li>VolatileFragmentWindows.txt</li>
+            <li>RoutingTable.txt</li>
+            <li>ARPCache.txt</li>
+            <li>KernelStatistics.txt</li>
+            <li>DNSCache.txt</li>
+            <li>RunningProcesses.txt</li>
+            <li>ActiveNetworkConnections.txt</li>
+            <li>ProgramsAndServicesUsingNetwork.txt</li>
+            <li>OpenFiles.txt</li>
+            <li>NetworkShares.txt</li>
+            <li>OpenPorts.txt</li>
+            <li>EncryptedArchives.txt</li>
+            <li>SystemConfiguration.txt</li>
+            <li>NetworkConfiguration.txt</li>
+            <li>StorageDevices.txt</li>
+            <li>DateAndTime.txt</li>
+            <li>EnvironmentVariables.txt</li>
+            <li>NetworkCardInfo.txt</li>
+            <li>StartedServices.txt</li>
+            <li>ScheduledTasks.txt</li>
+            <li>WiFiEvents.txt</li>
+            <li>ProcessInfo.txt</li>
+            <li>CurrentConnections.txt</li>
+            <li>WiFiProfiles.txt</li>
+        </ul>
+
+    </div>
+</section>
+
+<footer>
+    <p>Marco Abreu &copy; 2026</p>
+</footer>
+
+</body>
+</html>
