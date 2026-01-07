@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Security Application Suite | Marco Abreu</title>
+    <title>Security Application in Python | Marco Abreu</title>
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -10,82 +10,269 @@
 <nav class="navbar">
     <div class="logo">&lt;MarcoAbreu /&gt;</div>
     <ul class="nav-links">
-        <li><a href="../index.html#projects">Back to Projects</a></li>
+        <li><a href="../index.html#projects">← Back to Projects</a></li>
     </ul>
 </nav>
 
 <section class="section">
     <div class="container">
 
-        <h2 class="section-title">Security Application Suite (Python)</h2>
+        <h2 class="section-title">Computer Security Project</h2>
 
         <p>
-            This project consists of a comprehensive Python-based security application
-            designed to explore both offensive and defensive cybersecurity techniques
-            in controlled and ethical environments.
+            This project consists of the development of a computer security application
+            using a dynamic programming language, preferably Python.
+            The application was designed to explore core concepts of
+            offensive and defensive cybersecurity in controlled and authorized environments.
         </p>
 
         <br>
 
-        <h3>🎯 Objectives</h3>
+        <h3>🔐 Implemented Features</h3>
         <ul>
-            <li>Understand network reconnaissance and attack surfaces</li>
-            <li>Simulate common network attacks in a controlled environment</li>
-            <li>Develop secure communication mechanisms</li>
-            <li>Analyze service logs for malicious behavior</li>
+            <li><strong>Detection and listing of available network ports</strong> on remote machines</li>
+            <li><strong>UDP Flood (DoS) attack simulation</strong> against a remote IP using Scapy</li>
+            <li><strong>TCP SYN Flood attack</strong> against services such as HTTP or SMTP</li>
+            <li><strong>Log file analysis and processing</strong> for services like HTTP and SSH</li>
+            <li><strong>Secure client-server messaging service</strong> with multi-user support</li>
+            <li><strong>Client-side port knocking system</strong> for SSH and L2TP/IPSec access</li>
         </ul>
 
         <br>
 
-        <h3>🛠️ Implemented Features</h3>
-        <ul>
-            <li>Detection and listing of open ports on remote machines</li>
-            <li>UDP Flood (DoS) simulation using raw packets</li>
-            <li>TCP SYN Flood attack against selected services</li>
-            <li>Log analysis for HTTP, SSH, and other services</li>
-            <li>Syslog server integration</li>
-            <li>Secure client-server messaging system</li>
-            <li>SSH port knocking implementation with firewall rules</li>
-        </ul>
+        <h3>📦 Installation</h3>
 
-        <br>
-
-        <h3>⚙️ Technologies Used</h3>
-        <div class="tech-stack">
-            <span>Python</span>
-            <span>Scapy</span>
-            <span>Linux</span>
-            <span>Networking</span>
-            <span>Cryptography</span>
-        </div>
-
-        <br>
-
-        <h3>📸 Screenshots</h3>
         <p>
-            Below are example screenshots of the application interface and outputs
-            (to be added).
+            The project repository is available on GitHub:
         </p>
 
-        <!-- Example placeholder -->
-        <!--
-        <img src="../assets/images/security-app-ports.png" alt="Port Scan Output">
-        -->
+        <p>
+            🔗 <a href="https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD" target="_blank">
+                https://github.com/MarcoAbreu2002/MarcoAbreuProjetoFinalLPD
+            </a>
+        </p>
+
+        <p><strong>Linux users:</strong></p>
+        <pre><code>chmod +x requirements.sh
+./requirements.sh</code></pre>
+
+        <p><strong>Windows users:</strong></p>
+        <pre><code>requirements_windows.bat</code></pre>
+
+        <p>
+            Ensure you have administrator privileges and are using the
+            <strong>latest version of Python 3</strong>.
+        </p>
+
+        <pre><code>python3 main.py</code></pre>
 
         <br>
 
-        <h3>⚠️ Ethical Disclaimer</h3>
+        <h3>🖥️ Main Menu</h3>
+        <pre><code>************Computer Security Application**************
+
+A: Available Network Ports
+B: UDP flood (DoS)
+C: SYN flood (TCP SYN)
+D: Encrypted Chat
+Q: Quit
+</code></pre>
+
+        <br>
+
+        <h3>🔍 Port Detection and Listing</h3>
         <p>
-            All attack simulations were performed exclusively in authorized,
-            isolated environments for educational purposes.
-            No tests were conducted against production or unauthorized systems.
+            This feature allows scanning and listing open ports on domains or IP addresses,
+            with configurable port ranges and connectivity levels.
+        </p>
+
+        <pre><code>
+************Computer Security Application**************
+
+               A: Available Network Ports
+               B: UDP flood (DoS)
+               C: SYN flood (TCP SYN)
+               D: Encrypted Chat
+               Q: Quit
+
+               Choose the desired option: A
+Running available-ports.py...
+************************************************************
+        Port Scanner
+ 
+        D - Domain Name | I - IP Address        I
+         Enter the IP Address to scan: 192.168.1.10
+         Enter the start port number    1
+         Enter the last port number     99999
+Range not OK
+Setting last port to 65535
+Low connectivity = L | High connectivity = H    H
+
+Scanning in progress...  192.168.1.10
+************************************************************
+Port Open:-->    9200 -- Elasticsearch — default Elasticsearch port - Unofficial TCP
+Port Open:-->    9000 -- qBittorrent embedded torrent tracker default port - Unofficial TCP
+Port Open:-->    4444 -- I2P HTTP/S proxy - Unofficial TCP
+Port Open:-->    27017 -- MongoDB daemon process (mongod) and routing service (mongos) - No UDP, Unofficial TCP
+Port Open:-->    9300 -- IBM Cognos BI [citation needed] - Unofficial TCP
+Port Open:-->    12201 -- Graylog Extended Log Format (GELF) [importance?] - Unofficial TCP and UDP
+Port Open:-->    1515 -- No known service for port 1515
+Exiting main thread
+Scanning complete in  0:00:07.054941
+</code></pre>
+
+
+        <br>
+
+        <h3>💥 UDP Flood (DoS)</h3>
+        <p>
+            Simulation of a UDP Flood attack, allowing the configuration of the target IP,
+            target port, number of packets, and payload message.
+        </p>
+
+        <pre><code>
+************Computer Security Application**************
+
+               A: Available Network Ports
+               B: UDP flood (DoS)
+               C: SYN flood (TCP SYN)
+               D: Encrypted Chat
+               Q: Quit
+
+               Choose the desired option: B
+Running udp_flood.py...
+Enter the target IP address: 192.168.1.10
+Enter the target port: 80
+Enter the number of packets to send: 50
+Enter a message to send to the target: Test
+</code></pre>
+
+
+        <br>
+
+        <h3>⚡ TCP SYN Flood</h3>
+        <p>
+            Multi-threaded TCP SYN Flood simulation,
+            demonstrating resource exhaustion attacks on TCP services.
+        </p>
+
+        <pre><code>
+************Computer Security Application**************
+
+               A: Available Network Ports
+               B: UDP flood (DoS)
+               C: SYN flood (TCP SYN)
+               D: Encrypted Chat
+               Q: Quit
+
+               Choose the desired option: C
+Running synflood.py...
+Enter the target IP: 192.168.1.10
+Enter the number of packets to send per thread: 100
+Enter the number of threads: 5
+Thread sent 100 packets successfully.
+Sent 500 packets successfully.
+</code></pre>
+
+
+        <br>
+
+        <h3>🔒 Secure Messaging Service</h3>
+        <p>
+            A client-server messaging system featuring authentication,
+            encryption of private keys, broadcast messaging,
+            message history reading, and export functionality.
+        </p>
+
+        <img src="https://github.com/MarcoAbreu2002/myrepo/assets/88538173/6a948e09-4bab-448b-a0b6-5379727f4b78"
+             alt="Encrypted Chat Server Initialization"
+             style="max-width:100%; margin:20px 0;">
+
+        <img src="https://github.com/MarcoAbreu2002/myrepo/assets/88538173/204983c9-ff0c-4a78-89d6-3583d20c88af"
+             alt="Encrypted Chat Authentication"
+             style="max-width:100%; margin:20px 0;">
+
+        <br>
+
+        <h3>🚪 Port Knocking & SSH / L2TP-IPSec</h3>
+        <p>
+            Implementation of a port knocking mechanism using firewall rules configured
+            with iptables, enabling conditional access to SSH and L2TP/IPSec services.
+        </p>
+
+        <pre><code>
+#!/bin/bash
+
+### Clear existing rules and custom chains
+iptables -X
+iptables -F
+iptables -X INTO-P2
+iptables -X INTO-P3
+iptables -X INTO-P4
+
+# Accept established and related connections to allow return traffic
+iptables -A INPUT -p tcp --dport 22 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -m state --state RELATED -j ACCEPT
+
+# Create new chains to control the program flow
+iptables -N INTO-P2
+iptables -N INTO-P3
+iptables -N INTO-P4
+
+# Rules to move connections from one stage to another, tracking them with names
+# P1 - P2 - P3 - P4
+iptables -A INTO-P2 -m recent --name P1 --remove
+iptables -A INTO-P2 -m recent --name P2 --set
+iptables -A INTO-P2 -j LOG --log-prefix "INTO P2: "
+
+iptables -A INTO-P3 -m recent --name P2 --remove
+iptables -A INTO-P3 -m recent --name P3 --set
+iptables -A INTO-P3 -j LOG --log-prefix "INTO P3: "
+
+iptables -A INTO-P4 -m recent --name P3 --remove
+iptables -A INTO-P4 -m recent --name P4 --set
+iptables -A INTO-P4 -j LOG --log-prefix "INTO P4: "
+
+# Update the last time the P1 connection was seen
+iptables -A INPUT -m recent --update --name P1
+
+# Define the sequence of ports that must be accessed in a specific order
+# To allow access to the SSH port
+# If the sequence is broken, access rules will be rejected
+iptables -A INPUT -p tcp --dport 6666 -m recent --name P1 --set
+iptables -A INPUT -p tcp --dport 7777 -m recent --rcheck --seconds 10 --name P1 -j INTO-P2
+iptables -A INPUT -p tcp --dport 8888 -m recent --rcheck --seconds 10 --name P2 -j INTO-P3
+iptables -A INPUT -p tcp --dport 9999 -m recent --rcheck --seconds 10 --name P3 -j INTO-P4
+
+# If the sequence is complete (P1 → P2 → P3 → P4), the SSH port will be opened
+iptables -A INPUT -p tcp --dport 22 -m recent --rcheck --seconds 10 --name P4 -j ACCEPT
+
+# Open L2TP/IPSec port (1701) if the sequence is respected
+iptables -A INPUT -p udp --dport 1701 -m recent --rcheck --seconds 10 --name P4 -j ACCEPT
+
+# Default rule to reject new SSH connections if the sequence is not respected
+iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j DROP
+</code></pre>
+
+
+        <img src="https://github.com/MarcoAbreu2002/myrepo/assets/88538173/44225908-74a8-4c82-b993-42af981640c9"
+             alt="SSH Access After Port Knocking"
+             style="max-width:100%; margin:20px 0;">
+
+        <br>
+
+        <h3>⚠️ Ethical Notice</h3>
+        <p>
+            All offensive security features were developed and tested exclusively
+            in controlled, local, and authorized environments
+            for academic and educational purposes.
         </p>
 
     </div>
 </section>
 
 <footer>
-    <p>Designed & Built by Marco Abreu. &copy; 2024</p>
+    <p>Designed & Built by Marco Abreu. &copy; 2026</p>
 </footer>
 
 </body>
