@@ -115,6 +115,31 @@
             on the client side in signed cookies. If the application secret key
             is compromised, session forgery becomes possible.
         </p>
+<h3>XXE Technical Background (CVE-2014-3630)</h3>
+
+<p>
+    The vulnerability exploited in this scenario is identified as
+    <strong>CVE-2014-3630</strong>, affecting Play Framework versions prior
+    to secure XML parser hardening.
+</p>
+
+<p>
+    The root cause lies in the default Java XML parser configuration used
+    by Play Framework 2.1.3, which does not explicitly disable the resolution
+    of external entities or external DTDs.
+</p>
+
+<p>
+    While the application attempts to mitigate <em>in-band</em> XXE attacks
+    (where extracted data is reflected directly in the HTTP response),
+    it remains vulnerable to <em>out-of-band (OOB)</em> XXE attacks.
+</p>
+
+<p>
+    In OOB XXE, sensitive data is exfiltrated via secondary network requests
+    initiated by the XML parser itself, effectively bypassing application-level
+    output controls and firewall restrictions.
+</p>
 
         <h2 class="section-title">Attack Phases</h2>
 
@@ -224,43 +249,115 @@
 <img src="images/image14.png" alt="passwd file">
 <p><strong>Figure 4.7:</strong> /etc/passwd exfiltrated via XXE</p>
 
-
-        <h3>3. Session Cookie Forgery</h3>
-
-<p>
-    Play Framework uses <strong>stateless client-side sessions</strong>,
-    meaning all session data is stored inside a signed cookie.
-    While encrypted, this design becomes critically insecure
-    if the application secret key is compromised.
+        <p>
+    Analysis of the extracted <code>/etc/passwd</code> file revealed a user
+    named <code>play</code>, whose home directory pointed to
+    <code>/opt/play-2.1.3/</code>. This strongly suggested the application
+    installation path.
 </p>
 
 <p>
-    Using the same XXE technique, the file
-    <code>application.conf</code> was retrieved from the server.
-    This file contained the application’s secret signing key.
+    Using the same out-of-band XXE technique, directory listings were enumerated
+    by targeting internal paths such as:
+</p>
+
+<pre><code class="input">file:///opt/play-2.1.3/</code></pre>
+
+<p>
+    This revealed standard Play Framework directories, including
+    <code>conf/</code>, which ultimately contained the
+    <code>application.conf</code> file holding the application secret.
+</p>
+
+
+
+   <h3>3. Session Cookie Forgery</h3>
+
+<p>
+    Play Framework implements <strong>stateless, client-side sessions</strong>.
+    This design choice means that all session data is stored entirely inside
+    a browser cookie rather than on the server.
+</p>
+
+<p>
+    To ensure integrity, the cookie is cryptographically signed using an
+    application-wide secret key defined in <code>application.conf</code>.
+    However, the session contents are <strong>not encrypted</strong>,
+    only signed.
+</p>
+
+<p>
+    If the secret key is compromised, the server can no longer distinguish
+    between legitimate session cookies and attacker-generated ones,
+    resulting in a complete authentication bypass.
+</p>
+
+<p>
+    Using the previously demonstrated XXE out-of-band technique,
+    the file <code>application.conf</code> was successfully retrieved
+    from the server filesystem.
 </p>
 
 <img src="images/image15.png" alt="application.conf">
-<p><strong>Figure 4.8:</strong> application.conf revealing Play Framework secret key</p>
+<p><strong>Figure 4.8:</strong> application.conf revealing the Play Framework secret key</p>
 
 <p>
-    After reviewing the Play Framework source code, the session cookie
-    generation logic was identified.
-    The signing algorithm was then reimplemented in Python.
+    To understand how session cookies are generated and validated,
+    the Play Framework 2.1.x source code was reviewed directly.
+    The analysis focused on the <code>Session</code> class and the
+    internal signing mechanism.
+</p>
+
+<p class="ref">
+    Source code reviewed at:<br>
+    <a href="https://github.com/playframework/playframework/tree/2.1.x" target="_blank">
+        https://github.com/playframework/playframework/tree/2.1.x
+    </a>
+</p>
+
+<img src="images/image17.png" alt="Play Session class source code">
+<p><strong>Figure 4.9:</strong> Play Framework <code>Session</code> class source code</p>
+
+<p>
+    The <code>Session</code> class is responsible for serializing session
+    data into key-value pairs and encoding them into a single string
+    that is stored as a browser cookie.
+</p>
+
+<img src="images/image18.png" alt="Play sign function source code">
+<p><strong>Figure 4.10:</strong> <code>sign()</code> function used by Play Framework</p>
+
+<p>
+    The <code>sign()</code> function applies an HMAC-SHA1 operation to the
+    serialized session data using the application secret key.
+    The resulting signature is appended to the session value.
+</p>
+
+<p>
+    During each request, the server recomputes the signature and verifies
+    its integrity. No server-side session state or additional validation
+    is performed.
 </p>
 
 <ul class="features-list">
-    <li>Session data serialized as key-value pairs</li>
-    <li>HMAC-based signing using application secret</li>
-    <li>No server-side session validation</li>
+    <li>Session data serialized as plaintext key-value pairs</li>
+    <li>Integrity enforced using HMAC-SHA1</li>
+    <li>Signing key stored in <code>application.conf</code></li>
+    <li>No server-side session storage or validation</li>
 </ul>
+
+<p>
+    Based on this analysis, the signing algorithm was reimplemented
+    in Python to generate arbitrary session cookies that would be
+    accepted as valid by the server.
+</p>
 
 <img src="images/image20.png" alt="Python recreation">
 <p><strong>Figure 4.13:</strong> Cookie signing logic recreated in Python</p>
 
 <p>
-    A forged administrator session cookie was generated and manually injected
-    into the browser using the developer tools.
+    A forged session containing administrative privileges was generated
+    and manually injected into the browser using the developer tools.
 </p>
 
 <img src="images/image21.png" alt="Cookie insertion">
@@ -268,6 +365,13 @@
 
 <img src="images/image22.png" alt="Admin access">
 <p><strong>Figure 4.15:</strong> Administrative access successfully obtained</p>
+
+<p>
+    This confirms that once the Play Framework secret key is exposed,
+    the entire authentication mechanism can be bypassed without
+    exploiting additional server-side vulnerabilities.
+</p>
+
 
 
 <h3>4. Post-Exploitation</h3>
@@ -304,6 +408,24 @@ run
 <img src="images/image27.png" alt="Root access">
 <p><strong>Figure 4.20:</strong> Root privileges obtained</p>
 
+        <p>
+    Although the <code>root</code> account did not have a valid password
+    hash in <code>/etc/shadow</code>, the compromised user was configured
+    as a sudoer.
+</p>
+
+<p>
+    This allowed privilege escalation via:
+</p>
+
+<pre><code class="command">sudo su</code></pre>
+
+<p>
+    Misconfigured sudo privileges are a common post-exploitation issue
+    and frequently lead to full system compromise.
+</p>
+
+
 
         <h2 class="section-title">Tools Used</h2>
         <ul class="features-list">
@@ -316,6 +438,22 @@ run
             <li>Metasploit</li>
             <li>Firefox Storage Inspector</li>
         </ul>
+<h2 class="section-title">Defensive Measures & Mitigation</h2>
+
+<p>
+    From a defensive perspective, this attack chain could have been prevented
+    through a combination of secure configuration, defensive coding practices,
+    and system hardening.
+</p>
+
+<ul class="features-list">
+    <li>Disable XML external entity resolution explicitly</li>
+    <li>Reject XML payloads when JSON is expected</li>
+    <li>Avoid client-side session storage for authentication</li>
+    <li>Protect and rotate application secret keys</li>
+    <li>Apply least-privilege principles to system users</li>
+    <li>Keep frameworks and dependencies up to date</li>
+</ul>
 
         <h2 class="section-title">Conclusion</h2>
         <p>
