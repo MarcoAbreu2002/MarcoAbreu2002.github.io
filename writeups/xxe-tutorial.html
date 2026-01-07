@@ -54,10 +54,10 @@
             <li><strong>Primary Vulnerability:</strong> XXE (CVE-2014-3630)</li>
         </ul>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image4.png" alt="Vulnerable web server VM">
+        <img src="images/image4.png" alt="Vulnerable web server VM">
         <p><strong>Figure 2.1:</strong> Virtual machine hosting the vulnerable web server</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image5.png" alt="Attacker machine">
+        <img src="images/image5.png" alt="Attacker machine">
         <p><strong>Figure 2.2:</strong> Attacker virtual machine (Kali Linux)</p>
 
         <h2 class="section-title">Vulnerability Analysis</h2>
@@ -75,10 +75,10 @@
             exposing the vulnerable XML parser.
         </p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image6.png" alt="Original request">
+        <img src="images/image6.png" alt="Original request">
         <p><strong>Figure 3.1:</strong> Original request between the web page and the server</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image7.png" alt="XML response">
+        <img src="images/image7.png" alt="XML response">
         <p><strong>Figure 3.2:</strong> Server response to an XML request</p>
 
         <p>
@@ -97,7 +97,7 @@
 
         <pre><code>nmap -sC -sV 192.168.1.177 > nmap.txt</code></pre>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image8.png" alt="Nmap results">
+        <img src="images/image8.png" alt="Nmap results">
         <p><strong>Figure 4.1:</strong> Nmap scan results</p>
 
         <p>
@@ -105,10 +105,10 @@
             A directory brute-force was then performed using Dirb.
         </p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image9.png" alt="Dirb results">
+        <img src="images/image9.png" alt="Dirb results">
         <p><strong>Figure 4.2:</strong> Dirb directory enumeration</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image10.png" alt="Web login page">
+        <img src="images/image10.png" alt="Web login page">
         <p><strong>Figure 4.3:</strong> Web application login page</p>
 
         <h3>2. XXE Exploitation (Out-of-Band)</h3>
@@ -118,16 +118,16 @@
             Although in-band exfiltration was blocked, OOB XXE was still possible.
         </p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image11.png" alt="XXE OOB behavior">
+        <img src="images/image11.png" alt="XXE OOB behavior">
         <p><strong>Figure 4.4:</strong> Out-of-Band XXE attack behavior</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image12.png" alt="Malicious DTD">
+        <img src="images/image12.png" alt="Malicious DTD">
         <p><strong>Figure 4.5:</strong> External DTD hosted on attacker server</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image13.png" alt="Modified XML">
+        <img src="images/image13.png" alt="Modified XML">
         <p><strong>Figure 4.6:</strong> XML modified to reference attacker DTD</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image14.png" alt="passwd file">
+        <img src="images/image14.png" alt="passwd file">
         <p><strong>Figure 4.7:</strong> Contents of /etc/passwd exfiltrated via XXE</p>
 
         <h3>3. Session Cookie Forgery</h3>
@@ -136,7 +136,7 @@
             was retrieved, revealing the Play Framework secret key.
         </p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image15.png" alt="application.conf">
+        <img src="images/image15.png" alt="application.conf">
         <p><strong>Figure 4.8:</strong> Contents of application.conf</p>
 
         <p>
@@ -144,25 +144,25 @@
             recreate the cookie signing logic and generate a valid admin session.
         </p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image16.png" alt="Login function">
+        <img src="images/image16.png" alt="Login function">
         <p><strong>Figure 4.9:</strong> Login function in controller</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image17.png" alt="Session class">
+        <img src="images/image17.png" alt="Session class">
         <p><strong>Figure 4.10:</strong> Session class from Play Framework</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image18.png" alt="Encode function">
+        <img src="images/image18.png" alt="Encode function">
         <p><strong>Figure 4.11:</strong> Cookie encoding function</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image19.png" alt="Sign function">
+        <img src="images/image19.png" alt="Sign function">
         <p><strong>Figure 4.12:</strong> Cookie signing function</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image20.png" alt="Python recreation">
+        <img src="images/image20.png" alt="Python recreation">
         <p><strong>Figure 4.13:</strong> Signing function recreated in Python</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image21.png" alt="Cookie insertion">
+        <img src="images/image21.png" alt="Cookie insertion">
         <p><strong>Figure 4.14:</strong> Forged session cookie added to browser</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image22.png" alt="Admin access">
+        <img src="images/image22.png" alt="Admin access">
         <p><strong>Figure 4.15:</strong> Administrator access obtained</p>
 
         <h3>4. Post-Exploitation</h3>
@@ -171,19 +171,19 @@
             attack was executed using Metasploit.
         </p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image23.png" alt="Metasploit modules">
+        <img src="images/image23.png" alt="Metasploit modules">
         <p><strong>Figure 4.16:</strong> SSH login modules in Metasploit</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image24.png" alt="Module options">
+        <img src="images/image24.png" alt="Module options">
         <p><strong>Figure 4.17:</strong> Metasploit module configuration</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image25.png" alt="Brute-force success">
+        <img src="images/image25.png" alt="Brute-force success">
         <p><strong>Figure 4.18:</strong> Successful SSH brute-force</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image26.png" alt="Shadow file">
+        <img src="images/image26.png" alt="Shadow file">
         <p><strong>Figure 4.19:</strong> /etc/shadow contents</p>
 
-        <img src="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/blob/main/writeups/images/image27.png" alt="Root access">
+        <img src="images/image27.png" alt="Root access">
         <p><strong>Figure 4.20:</strong> Privilege escalation using sudo</p>
 
         <h2 class="section-title">Tools Used</h2>
