@@ -4,6 +4,27 @@
     <meta charset="UTF-8">
     <title>XXE & Cookie Forgery on Play Framework | Marco Abreu</title>
     <link rel="stylesheet" href="../style.css">
+        <style>
+        /* Extra styling for project page */
+        .features-list, .requirements-list, .installation-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li::before { content: "▹"; color: var(--accent-color); margin-right: 8px; }
+        .requirements-list li::before { content: "🖥️"; margin-right: 8px; }
+        .installation-list li::before { content: "💻"; margin-right: 8px; }
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        pre code.input { color: #ffd86f; }
+        pre code.output { color: #00ffff; }
+        h3 { margin-top: 40px; }
+    </style>
 </head>
 <body>
 
@@ -95,7 +116,7 @@
             the target machine using Nmap.
         </p>
 
-        <pre><code>nmap -sC -sV 192.168.1.177 > nmap.txt</code></pre>
+        <pre><code class="output">nmap -sC -sV 192.168.1.177 > nmap.txt</code></pre>
 
         <img src="images/image8.png" alt="Nmap results">
         <p><strong>Figure 4.1:</strong> Nmap scan results</p>
