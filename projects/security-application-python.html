@@ -48,7 +48,7 @@
 
         <p>
             This project consists of the development of a computer security application
-            using a dynamic programming language, preferably Python.
+            using Python.
             The application was designed to explore core concepts of
             offensive and defensive cybersecurity in controlled and authorized environments.
         </p>
@@ -109,8 +109,9 @@ Q: Quit
          Enter the IP Address to scan: 192.168.1.10
          Enter the start port number    1
          Enter the last port number     99999
-Range not OK
-Setting last port to 65535
+</code>
+<code class="command">Range not OK
+Setting last port to 65535</code>
 <code class="input">Low connectivity = L | High connectivity = H    H</code>
 <code class="output">
 Scanning in progress...  192.168.1.10
@@ -121,8 +122,8 @@ Port Open:-->    4444 -- I2P HTTP/S proxy - Unofficial TCP
 Port Open:-->    27017 -- MongoDB daemon process (mongod) and routing service (mongos) - No UDP, Unofficial TCP
 Port Open:-->    9300 -- IBM Cognos BI [citation needed] - Unofficial TCP
 Port Open:-->    12201 -- Graylog Extended Log Format (GELF) [importance?] - Unofficial TCP and UDP
-Port Open:-->    1515 -- No known service for port 1515
-Exiting main thread
+Port Open:-->    1515 -- No known service for port 1515</code>
+<code class="command">Exiting main thread
 Scanning complete in  0:00:07.054941
 </code></pre>
 
@@ -135,7 +136,7 @@ Scanning complete in  0:00:07.054941
             target port, number of packets, and payload message.
         </p>
 
-        <pre><code>
+        <pre><code class="output">
 ************Computer Security Application**************
 
                A: Available Network Ports
@@ -144,9 +145,9 @@ Scanning complete in  0:00:07.054941
                D: Encrypted Chat
                Q: Quit
 
-               Choose the desired option: B
-Running udp_flood.py...
-Enter the target IP address: 192.168.1.10
+               <code class="input">Choose the desired option: B</code>
+<code class="command">Running udp_flood.py...</code>
+<code class="input">Enter the target IP address: 192.168.1.10
 Enter the target port: 80
 Enter the number of packets to send: 50
 Enter a message to send to the target: Test
@@ -161,7 +162,7 @@ Enter a message to send to the target: Test
             demonstrating resource exhaustion attacks on TCP services.
         </p>
 
-        <pre><code>
+        <pre><code class="output">
 ************Computer Security Application**************
 
                A: Available Network Ports
@@ -169,12 +170,19 @@ Enter a message to send to the target: Test
                C: SYN flood (TCP SYN)
                D: Encrypted Chat
                Q: Quit
-
+</code>
+            <code class="input">
                Choose the desired option: C
+                </code>
+            <code class="command">
 Running synflood.py...
+                </code>
+            <code class="input">
 Enter the target IP: 192.168.1.10
 Enter the number of packets to send per thread: 100
 Enter the number of threads: 5
+                </code>
+            <code class="command">
 Thread sent 100 packets successfully.
 Sent 500 packets successfully.
 </code></pre>
@@ -209,23 +217,34 @@ Sent 500 packets successfully.
 #!/bin/bash
 
 ### Clear existing rules and custom chains
+                            </code>
+            <code class="output">
 iptables -X
 iptables -F
 iptables -X INTO-P2
 iptables -X INTO-P3
 iptables -X INTO-P4
-
+</code>
+            <code>
 # Accept established and related connections to allow return traffic
+                                            </code>
+            <code class="output">
 iptables -A INPUT -p tcp --dport 22 -m state --state ESTABLISHED -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -m state --state RELATED -j ACCEPT
-
+</code>
+            <code>
 # Create new chains to control the program flow
+                                                            </code>
+            <code class="output">
 iptables -N INTO-P2
 iptables -N INTO-P3
 iptables -N INTO-P4
-
+</code>
+            <code>
 # Rules to move connections from one stage to another, tracking them with names
 # P1 - P2 - P3 - P4
+                                                                            </code>
+            <code class="output">
 iptables -A INTO-P2 -m recent --name P1 --remove
 iptables -A INTO-P2 -m recent --name P2 --set
 iptables -A INTO-P2 -j LOG --log-prefix "INTO P2: "
@@ -237,25 +256,40 @@ iptables -A INTO-P3 -j LOG --log-prefix "INTO P3: "
 iptables -A INTO-P4 -m recent --name P3 --remove
 iptables -A INTO-P4 -m recent --name P4 --set
 iptables -A INTO-P4 -j LOG --log-prefix "INTO P4: "
-
+</code>
+            <code>
 # Update the last time the P1 connection was seen
+                                                                                            </code>
+            <code class="output">
 iptables -A INPUT -m recent --update --name P1
-
+</code>
+            <code>
 # Define the sequence of ports that must be accessed in a specific order
 # To allow access to the SSH port
 # If the sequence is broken, access rules will be rejected
+                                                                                                            </code>
+            <code class="output">
 iptables -A INPUT -p tcp --dport 6666 -m recent --name P1 --set
 iptables -A INPUT -p tcp --dport 7777 -m recent --rcheck --seconds 10 --name P1 -j INTO-P2
 iptables -A INPUT -p tcp --dport 8888 -m recent --rcheck --seconds 10 --name P2 -j INTO-P3
 iptables -A INPUT -p tcp --dport 9999 -m recent --rcheck --seconds 10 --name P3 -j INTO-P4
-
+</code>
+            <code>
 # If the sequence is complete (P1 → P2 → P3 → P4), the SSH port will be opened
+                                                                                                                            </code>
+            <code class="output">
 iptables -A INPUT -p tcp --dport 22 -m recent --rcheck --seconds 10 --name P4 -j ACCEPT
-
+</code>
+            <code>
 # Open L2TP/IPSec port (1701) if the sequence is respected
+                                                                                                                                            </code>
+            <code class="output">
 iptables -A INPUT -p udp --dport 1701 -m recent --rcheck --seconds 10 --name P4 -j ACCEPT
-
+</code>
+            <code>
 # Default rule to reject new SSH connections if the sequence is not respected
+                                                                                                                                                            </code>
+            <code class="output">
 iptables -A INPUT -p tcp --dport 22 -m state --state NEW -j DROP
 </code></pre>
 
