@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // Typing Effect for the Hero Section
-    const text = "init_security_protocol --user=Alex";
+    const text = "init_security_protocol --user=Marco";
     const typingElement = document.getElementById('typing-effect');
     let index = 0;
 
