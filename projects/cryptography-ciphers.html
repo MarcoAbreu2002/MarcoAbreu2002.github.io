@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Classical Cryptography in Python | Marco Abreu</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Extra styling for project page */
+        .features-list, .concepts-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li::before {
+            content: "▹";
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+        .concepts-list li::before {
+            content: "🔐";
+            margin-right: 8px;
+        }
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        h3 { margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">&lt;MarcoAbreu /&gt;</div>
+    <ul class="nav-links">
+        <li><a href="../index.html#projects">← Back to Projects</a></li>
+    </ul>
+</nav>
+
+<section class="section">
+    <div class="container">
+
+        <h2 class="section-title">Classical Cryptography Application in Python</h2>
+
+        <p>
+            This project focuses on the implementation and analysis of
+            <strong>classical cryptographic ciphers</strong> using Python,
+            with a strong emphasis on both encryption mechanisms and
+            <strong>cryptographic attacks</strong>.
+            Although these ciphers are no longer secure by modern standards,
+            they play a crucial role in understanding the foundations of cybersecurity.
+        </p>
+
+        <p>
+            The application implements two well-known classical ciphers:
+            the <strong>Affine Cipher</strong> and the <strong>Vigenère Cipher</strong>,
+            along with multiple attack techniques used to break them.
+        </p>
+
+        <h3>🧱 Project Architecture</h3>
+        <p>
+            The application is modular and divided into three main components:
+        </p>
+        <ul class="features-list">
+            <li><strong>main.py</strong> – Main interface and application controller</li>
+            <li><strong>Vigenere.py</strong> – Full implementation of the Vigenère cipher and attacks</li>
+            <li><strong>ft-affine.py</strong> – Affine cipher implementation and cryptanalysis techniques</li>
+        </ul>
+
+        <p>
+            This modular design improves readability, maintainability,
+            and scalability, following good software engineering practices.
+        </p>
+
+        <h3>🖥️ Main Application Menu</h3>
+        <p>
+            The <code>main.py</code> file acts as the entry point of the application,
+            providing a unified interface to access both cipher modules.
+        </p>
+
+        <ul class="features-list">
+            <li>Cross-platform screen clearing (Windows, Linux, macOS)</li>
+            <li>Interactive ASCII-based menu</li>
+            <li>Execution of independent cipher modules via subprocesses</li>
+            <li>Graceful handling of invalid input and interruptions</li>
+        </ul>
+
+        <h3>🔢 Affine Cipher Implementation</h3>
+        <p>
+            The Affine cipher is a monoalphabetic substitution cipher based on
+            modular arithmetic. It uses the formula:
+        </p>
+
+        <pre><code>C = (A × P + B) mod 26</code></pre>
+
+        <p>
+            Where <strong>A</strong> and <strong>B</strong> are keys and
+            <strong>A must be coprime with 26</strong> to ensure successful decryption.
+        </p>
+
+        <h4>Implemented Features</h4>
+        <ul class="features-list">
+            <li>Encryption and decryption using modular arithmetic</li>
+            <li>Automatic calculation of modular inverse</li>
+            <li>Support for non-alphabetic characters</li>
+        </ul>
+
+        <h4>Cryptographic Attacks</h4>
+        <ul class="features-list">
+            <li><strong>Brute-force attack</strong> testing all valid key combinations</li>
+            <li><strong>Dictionary attack</strong> using real Portuguese wordlists</li>
+            <li><strong>Known-plaintext attack</strong> to recover the encryption key</li>
+        </ul>
+
+        <p>
+            These attacks clearly demonstrate the weakness of monoalphabetic
+            ciphers and the dangers of small key spaces.
+        </p>
+
+        <h3>🔤 Vigenère Cipher Implementation</h3>
+        <p>
+            The Vigenère cipher is a polyalphabetic substitution cipher
+            that uses a repeating keyword to encrypt text.
+            It was historically considered secure but is vulnerable
+            to modern cryptanalysis techniques.
+        </p>
+
+        <h4>Key Features</h4>
+        <ul class="features-list">
+            <li>Dynamic generation of the Vigenère table</li>
+            <li>Encryption and decryption modes</li>
+            <li>Step-by-step visualization of the encryption process</li>
+            <li>Input validation for safe and controlled execution</li>
+        </ul>
+
+        <h4>Educational Step-by-Step Mode</h4>
+        <p>
+            One of the most valuable aspects of this implementation is the
+            step-by-step mode, which visually highlights:
+        </p>
+        <ul class="features-list">
+            <li>The plaintext character</li>
+            <li>The key character</li>
+            <li>The resulting encrypted character</li>
+            <li>The corresponding row and column in the Vigenère table</li>
+        </ul>
+
+        <h3>🧨 Attacks Against the Vigenère Cipher</h3>
+
+        <ul class="features-list">
+            <li>
+                <strong>Brute-force attack:</strong>
+                Generates all possible keys up to a defined length
+                and tests decrypted output against a dictionary.
+            </li>
+            <li>
+                <strong>Dictionary-based validation:</strong>
+                Uses linguistic properties to drastically reduce false positives.
+            </li>
+            <li>
+                <strong>Known-plaintext attack:</strong>
+                Recovers the encryption key by exploiting the mathematical
+                relationship between plaintext and ciphertext.
+            </li>
+        </ul>
+
+        <p>
+            These attacks highlight an essential cybersecurity principle:
+            <strong>security must rely on strong keys and algorithms,
+            not on secrecy or obscurity</strong>.
+        </p>
+
+        <h3>📚 Cybersecurity Concepts Demonstrated</h3>
+        <ul class="concepts-list">
+            <li>Classical cryptography fundamentals</li>
+            <li>Key management and key space analysis</li>
+            <li>Modular arithmetic and inverses</li>
+            <li>Brute-force and dictionary attacks</li>
+            <li>Known-plaintext attack scenarios</li>
+            <li>Secure and modular software design</li>
+        </ul>
+
+        <h3>🧠 Conclusion</h3>
+        <p>
+            This project serves as both a technical and educational demonstration
+            of classical cryptography and its weaknesses.
+            By implementing not only encryption algorithms but also
+            practical attack techniques, it reinforces a deep understanding
+            of why modern cryptographic standards are necessary.
+        </p>
+
+
+    </div>
+</section>
+
+<footer>
+    <p>Marco Abreu &copy; 2026</p>
+</footer>
+
+</body>
+</html>
