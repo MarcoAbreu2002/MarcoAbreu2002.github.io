@@ -192,11 +192,15 @@
         Understanding these entry points is crucial for defense.
     </p>
     <ul class="features-list">
-        <li><strong>Social Engineering:</strong> Phishing emails manipulating users into clicking links.</li>
-        <li><strong>Vulnerability Exploitation:</strong> Leveraging zero-days or unpatched bugs.</li>
-        <li><strong>Supply Chain Attacks:</strong> Injecting malware into legitimate updates.</li>
-        <li><strong>Removable Media:</strong> Physical vectors like infected USB drives.</li>
-    </ul>
+    <li><strong>Social Engineering (Phishing and Spear Phishing):</strong> One of the most effective attack vectors. Through emails, messages, or fake websites, attackers manipulate users into revealing sensitive information or downloading malware. Phishing targets a broad audience, while spear phishing is highly targeted. According to the UN (2024), over 90% of malware attacks in 2022 were propagated via email phishing campaigns.</li>
+    <li><strong>Software Vulnerability Exploitation:</strong> Malware frequently exploits security flaws (bugs or misconfigurations) in systems, applications, or network devices. These vulnerabilities may be zero-day or known but unpatched, and exploitation can occur via malicious websites (drive-by downloads) or email attachments.</li>
+    <li><strong>Removable Devices:</strong> USB flash drives, external disks, or other removable storage devices can carry malware and automatically spread it when connected to a computer, especially in environments with limited physical access control.</li>
+    <li><strong>Networks and Network Services:</strong> Malware can spread across networks by exploiting vulnerabilities in network services, unsecured file shares, or weak credentials. Worms are a classic example of malware that propagates autonomously through networks.</li>
+    <li><strong>Malvertising and Malicious Downloads:</strong> Infected online advertisements (malvertising) can redirect users to malware-hosting websites or trigger automatic malicious downloads.</li>
+    <li><strong>Supply Chain Attacks:</strong> Malware may be inserted into legitimate software or hardware during development or distribution, compromising all users who install the affected products. These attacks are particularly dangerous due to the trust placed in vendors.</li>
+    <li><strong>Cloud and IoT Systems:</strong> With the growing adoption of cloud environments and IoT devices, these systems have become attractive targets. Environment-specific vulnerabilities can be exploited to install malware, steal data, or launch distributed attacks.</li>
+</ul>
+
 
     <h3>3. The Evolution of Evasion</h3>
     <p>
@@ -246,20 +250,18 @@
         Below are examples of how logic can be altered without changing the outcome.
     </p>
 
-    <pre><code class="command">
-# Dead Code Insertion
-x = x + 0  // Adds instructions that do nothing
-
-# Instruction Substitution
-add 1      // Replaced by:
-inc        // Two increment instructions
-    </code></pre>
-
     <ul class="features-list">
-        <li><strong>Register Reassignment:</strong> Swapping CPU registers (e.g., using EAX instead of EBX).</li>
-        <li><strong>Subroutine Reordering:</strong> Shuffling the order of functions in the code.</li>
-        <li><strong>Control Flow Obfuscation:</strong> Adding complex jumps and loops to obscure logic.</li>
-    </ul>
+    <li><strong>Dead Code Insertion:</strong> Adds instructions that do not affect program execution in order to change the code’s appearance without altering its behavior (e.g., NOP instructions, redundant operations, unused variables, unreachable code). This increases file size and changes the code signature, hindering signature-based antivirus detection.</li>
+    <li><strong>Register Reassignment:</strong> Involves swapping the CPU registers used by a program across different generations while preserving its behavior (e.g., alternating EAX, EBX, and EDX). This superficial change helps evade pattern-based detection.</li>
+    <li><strong>Subroutine Reordering:</strong> Randomly changes the order of subroutines in the source code without altering overall logic, generating a large number of variants (e.g., 10 subroutines can produce 10! combinations).</li>
+    <li><strong>Code Reordering:</strong> Reorganizes the order of instructions or code blocks while preserving execution flow through conditional or unconditional jumps. This technique is effective at bypassing static analysis.</li>
+    <li><strong>Instruction Substitution:</strong> Replaces instructions with semantically equivalent alternatives that produce the same result (e.g., XOR A, A → SUB A, A or ADD A, 2 → INC A; INC A). These changes alter byte sequences and complicate signature creation.</li>
+    <li><strong>Code Transposition:</strong> Rearranges instruction sequences while maintaining behavior, either by random shuffling with jumps or by reordering only independent instructions. The latter approach is more advanced and harder to detect due to dependency analysis.</li>
+    <li><strong>Code Integration:</strong> An advanced technique where malicious code is embedded directly into a target program’s body by decompiling it, inserting malware into its components, and recompiling, resulting in highly obfuscated integrated malware.</li>
+    <li><strong>Identifier Renaming:</strong> Changes variable, function, or class names to meaningless identifiers (e.g., calcularTotal() → a1b2c3()), reducing readability and complicating reverse engineering, especially effective in interpreted languages.</li>
+    <li><strong>Control Flow Obfuscation:</strong> Alters the program’s execution flow by introducing complex jumps, unreachable paths, or rewriting control structures into less obvious forms, making analysis by decompilers and control-flow tools more difficult.</li>
+</ul>
+
 
     <h2 class="section-title">The Role of Artificial Intelligence</h2>
     
