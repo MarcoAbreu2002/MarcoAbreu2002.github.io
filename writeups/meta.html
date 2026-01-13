@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI & Metamorphic Malware Evolution | Cybersecurity Insights</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Extra styling for project page */
+        :root {
+            --accent-color: #64ffda; /* Defining accent color */
+        }
+        
+        body {
+            background-color: #0a192f;
+            color: #8892b0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+
+        .navbar {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #0a192f;
+        }
+        .logo { color: var(--accent-color); font-weight: bold; font-size: 1.2rem; }
+        .nav-links { list-style: none; display: flex; }
+        .nav-links li a { color: #ccd6f6; text-decoration: none; font-size: 0.9rem; }
+
+        .hero {
+            padding: 80px 0;
+            text-align: left;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        h1 {
+            color: #ccd6f6;
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #8892b0;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+        .btn {
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .btn:hover { background: rgba(100, 255, 218, 0.1); }
+
+        .features-list, .requirements-list, .installation-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li { margin-bottom: 10px; }
+        .features-list li::before { content: "▹"; color: var(--accent-color); margin-right: 8px; }
+        
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #233554;
+        }
+        pre code {
+            font-family: 'Courier New', Courier, monospace;
+            color: #e6f1ff;
+        }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        
+        h3 { 
+            margin-top: 40px; 
+            color: #ccd6f6;
+            font-size: 1.5rem;
+        }
+        h4 {
+            color: #e6f1ff;
+            margin-top: 25px;
+        }
+        
+        p { line-height: 1.6; }
+
+        .section-title {
+            color: #e6f1ff;
+            border-bottom: 1px solid #233554;
+            padding-bottom: 10px;
+            margin-top: 50px;
+            font-size: 1.8rem;
+        }
+
+        .section img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            background: #0a192f;
+            border: 1px solid #233554;
+            border-radius: 4px;
+        }
+        
+        .image-caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #8892b0;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .ref {
+            font-size: 0.85rem;
+            color: #8892b0;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #233554;
+            margin-top: 50px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">&lt;CyberSecurity /&gt;</div>
+    <ul class="nav-links">
+        <li><a href="#">← Back to Articles</a></li>
+    </ul>
+</nav>
+
+<header class="hero">
+    <div class="container">
+        <h1>The Shape-Shifting Threat</h1>
+        <p class="subtitle">
+            An in-depth analysis of Metamorphic Malware, Attack Vectors, and the role of Artificial Intelligence in modern evasion techniques.
+        </p>
+        <a href="#tutorial" class="btn">Read Article</a>
+    </div>
+</header>
+
+<section id="tutorial" class="section">
+    <div class="container">
+
+    <h3>1. Introduction to the Threat Landscape</h3>
+    <p>
+        In the ever-evolving landscape of cybersecurity, a quiet war is being fought between attackers and defenders. 
+        As security systems become more sophisticated, so too does the software designed to bypass them. 
+        While traditional viruses are often easily caught by signature-based detection, a more insidious breed of threat exists: 
+        code that changes its own "fingerprint" while keeping its malicious behavior intact.
+    </p>
+
+    <h4>Defining Malware</h4>
+    <p>
+        Malware (malicious software) is any program or code created with the intent to compromise the confidentiality, 
+        integrity, or availability of computer systems and data. It covers various categories with specific behaviors:
+    </p>
+
+    <ul class="features-list">
+        <li><strong>Viruses and Worms:</strong> Programs primarily focused on self-replication and spreading across networks.</li>
+        <li><strong>Ransomware:</strong> Software that encrypts user data, demanding payment for its release.</li>
+        <li><strong>Spyware/Keyloggers:</strong> Tools designed to silently monitor user activity and steal sensitive information.</li>
+        <li><strong>Trojans:</strong> Malicious code disguised as legitimate software to create backdoors.</li>
+    </ul>
+
+    
+    <img src="images/placeholder_malware_types.png" alt="Diagram showing types of malware like Viruses, Worms, Trojans">
+    <p class="image-caption"><strong>Figure 1.1:</strong> Common classifications of malicious software</p>
+
+    <h3>2. Common Attack Vectors</h3>
+    <p>
+        Hackers use various methods, or "vectors," to deliver these payloads into a victim's system. 
+        Understanding these entry points is crucial for defense.
+    </p>
+    <ul class="features-list">
+        <li><strong>Social Engineering:</strong> Phishing emails manipulating users into clicking links.</li>
+        <li><strong>Vulnerability Exploitation:</strong> Leveraging zero-days or unpatched bugs.</li>
+        <li><strong>Supply Chain Attacks:</strong> Injecting malware into legitimate updates.</li>
+        <li><strong>Removable Media:</strong> Physical vectors like infected USB drives.</li>
+    </ul>
+
+    <h3>3. The Evolution of Evasion</h3>
+    <p>
+        As antivirus software became better at identifying malware "signatures" (unique sequences of bytes), 
+        malware authors had to evolve. This led to two major generations of evasive malware.
+    </p>
+
+    <h4>Polymorphic Malware</h4>
+    <p>
+        Polymorphic malware attempts to hide by encrypting its main malicious body. When it infects a new system, 
+        it generates a unique decryption routine. Because the key and the decryptor change with every infection, 
+        the file looks different to an antivirus scanner. However, it must eventually decrypt itself in memory to run, 
+        making it vulnerable to runtime analysis.
+    </p>
+
+    <h4>Metamorphic Malware: The True Shape-Shifter</h4>
+    <p>
+        Metamorphic malware takes evasion to the next level. Unlike its polymorphic cousin, it does not rely on encryption. 
+        Instead, it <strong>rewrites its own code</strong> with every iteration.
+    </p>
+
+    <p class="ref">
+        <em>Definition:</em> Malicious software capable of altering its own code at each execution, maintaining the same functionality 
+        but completely changing its internal structure.
+    </p>
+
+    <h3>4. How Metamorphic Engines Work</h3>
+    <p>
+        The "brain" behind this transformation is called a <strong>Mutation Engine</strong>. 
+        It typically operates in a complex cycle involving several stages:
+    </p>
+
+    
+    <img src="images/placeholder_engine.png" alt="Diagram of Disassembler, Shrinker, Permutator, and Assembler workflow">
+    <p class="image-caption"><strong>Figure 4.1:</strong> The internal cycle of a metamorphic engine</p>
+
+    <ul class="features-list">
+        <li><strong>Disassembler:</strong> Converts machine code into assembly language.</li>
+        <li><strong>Shrinker:</strong> Removes "dead code" from previous mutations to manage file size.</li>
+        <li><strong>Permutator/Expander:</strong> Applies obfuscation techniques to change structure.</li>
+        <li><strong>Assembler:</strong> Recompiles the mutated code into a new executable.</li>
+    </ul>
+
+    <h4>Obfuscation Techniques</h4>
+    <p>
+        To rewrite itself successfully, the engine uses several sophisticated coding tricks. 
+        Below are examples of how logic can be altered without changing the outcome.
+    </p>
+
+    <pre><code class="command">
+# Dead Code Insertion
+x = x + 0  // Adds instructions that do nothing
+
+# Instruction Substitution
+add 1      // Replaced by:
+inc        // Two increment instructions
+    </code></pre>
+
+    <ul class="features-list">
+        <li><strong>Register Reassignment:</strong> Swapping CPU registers (e.g., using EAX instead of EBX).</li>
+        <li><strong>Subroutine Reordering:</strong> Shuffling the order of functions in the code.</li>
+        <li><strong>Control Flow Obfuscation:</strong> Adding complex jumps and loops to obscure logic.</li>
+    </ul>
+
+    <h2 class="section-title">The Role of Artificial Intelligence</h2>
+    
+    <p>
+        While traditional metamorphic engines are powerful, they are difficult to maintain. 
+        <strong>Large Language Models (LLMs)</strong> are revolutionizing this field. 
+        AI is not just a tool for defenders; it has become a potent asset for offensive operations.
+    </p>
+
+    <h3>AI as the New Mutation Engine</h3>
+    <p>
+        Modern research suggests that LLMs can effectively replace complex, hard-coded mutation engines. 
+        Because LLMs are trained on vast amounts of code, they understand programming syntax and semantics deeply. 
+        They can be prompted to take a piece of malicious source code and "rewrite it to be stealthy" 
+        without breaking its functionality.
+    </p>
+
+    
+    <img src="images/placeholder_ai_flow.png" alt="Flowchart showing prompt input, LLM processing, and mutated code output">
+    <p class="image-caption"><strong>Figure 5.1:</strong> Adaptive Metamorphic Malware generation using LLMs</p>
+
+    <p>
+        This creates a new paradigm: <strong>Adaptive Metamorphic Malware</strong>. 
+        Unlike traditional engines, an AI-driven engine can be <em>context-aware</em>. 
+        An attacker provides information about the target (e.g., "Windows 11 with Defender"), 
+        and the AI generates a variant optimized to evade that specific defense.
+    </p>
+
+    <h3>Cloud vs. Local LLMs</h3>
+    <p>
+        Hackers utilizing AI for malware generation generally have two choices, each with specific trade-offs:
+    </p>
+
+    <ul class="features-list">
+        <li><strong>Cloud Models (e.g., GPT-4, Grok):</strong> Hosted on massive server farms. They offer superior reasoning allowing for complex mutations. However, they often have "guardrails" or safety filters that refuse malicious requests.</li>
+        <li><strong>Local Models (e.g., Mistral, Qwen):</strong> Open-source models run on local hardware. While slightly less powerful, they offer <strong>Privacy and Control</strong>. They operate without external logs or safety filters, making them ideal for autonomous malware generation.</li>
+    </ul>
+
+    <h2 class="section-title">Conclusion</h2>
+    <p>
+        The integration of Artificial Intelligence into metamorphic malware represents a significant leap in cyber threat sophistication. 
+        By leveraging the code-generation capabilities of LLMs, attackers can produce infinite, functional variants of malware that adapt to their targets. 
+        This shift moves the goalposts for cybersecurity professionals, rendering static signatures obsolete and demanding smarter, 
+        behavioral-based defense systems capable of identifying the <em>intent</em> of a program, regardless of how its code is written.
+    </p>
+
+    </div>
+</section>
+
+<footer>
+    <p>Marco Abreu &copy; 2026</p>
+</footer>
+
+</body>
+</html>
