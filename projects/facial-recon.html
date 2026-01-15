@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html lang="en"> <head> <meta charset="UTF-8"> <title>Banking Security: Facial Recognition & Keystroke Dynamics | Project Report</title> <link rel="stylesheet" href="../style.css"> <style> /* Extra styling for project page */ :root { --accent-color: #64ffda; } body { background-color: #0a192f; color: #8892b0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; } h2 { color: #ccd6f6; } h3, h4 { color: #ccd6f6; margin-top: 40px; } p { margin-bottom: 15px; } strong { color: #e6f1ff; }
+
+    .navbar {
+        background: #0a192f;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .logo {
+        color: var(--accent-color);
+        font-weight: bold;
+        font-size: 1.2rem;
+        font-family: monospace;
+    }
+    .nav-links {
+        list-style: none;
+    }
+    .nav-links a {
+        color: #ccd6f6;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .nav-links a:hover { color: var(--accent-color); }
+
+    .section { padding: 50px 0; }
+    .container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+    .section-title { font-size: 2rem; margin-bottom: 30px; }
+
+    .features-list, .installation-list {
+        list-style: none;
+        padding-left: 0;
+        margin: 20px 0;
+    }
+    .features-list li::before {
+        content: "▹";
+        color: var(--accent-color);
+        margin-right: 8px;
+    }
+    .installation-list li::before {
+        content: "💻";
+        margin-right: 8px;
+    }
+    pre {
+        background: #112240;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 20px 0;
+        font-family: 'Courier New', Courier, monospace;
+    }
+    pre code { color: #8892b0; }
+    pre code.command { color: #64ffda; font-weight: bold; } /* Using for highlighted imports/headers */
+    pre code.input { color: #ffd86f; }
+    pre code.output { color: #00ffff; }
+
+    .image-container {
+        text-align: center;
+        margin: 30px 0;
+    }
+    .image-container img {
+        max-width: 100%;
+        border-radius: 5px;
+        border: 1px solid #333;
+    }
+    .caption {
+        font-size: 0.9em;
+        color: #8892b0;
+        margin-top: 8px;
+        display: block;
+    }
+    
+    .alert {
+        background-color: #172a45;
+        border-left: 5px solid var(--accent-color);
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 3px;
+    }
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        color: #8892b0;
+        font-size: 0.8rem;
+    }
+</style>
+</head> <body>
+
+<nav class="navbar"> <a href="../index.html"> <div class="logo">&lt;Marco Abreu /&gt;</div> </a>
+
+<ul class="nav-links">
+    <li><a href="../index.html#projects">← Back to Projects</a></li>
+</ul>
+</nav>
+
+<section class="section"> <div class="container">
+
+    <h2 class="section-title">Improving Banking Security: A Full Technical Report</h2>
+
+    <p>
+        As cyberattacks on the financial sector escalate—costing the industry $2 billion over the last 20 years—traditional passwords are no longer enough. This project details the development of a secure banking application that implements <strong>Two-Factor Authentication (2FA)</strong> using <strong>Facial Recognition</strong> and continuous authentication via <strong>Keystroke Dynamics (KD)</strong> to secure user sessions, even during idle timeouts.
+    </p>
+
+    <p>
+        Below is the complete breakdown of our implementation, code decisions, and experimental results.
+    </p>
+
+    <h3>1. System Architecture & Libraries</h3>
+    <p>
+        The project was built in Python. We started by importing specific libraries chosen for their robustness in data handling and machine learning.
+    </p>
+
+    <h4>1.1 The Imports</h4>
+    <p>
+        We used <code>logging</code> for traceability, <code>pandas</code> for data manipulation, and <code>sklearn</code> for our Machine Learning components.
+    </p>
+
+    <pre><code class="input">import logging
+from utils import log_event from math import sqrt import pandas as pd import joblib from sklearn.ensemble import RandomForestClassifier from sklearn.model_selection import train_test_split from sklearn.metrics import accuracy_score, classification_report from io import BytesIO import sqlite3 db_path = "users.db" import requests import cv2</code></pre>
+
+    <p><strong>Key Technical Decisions:</strong></p>
+    <ul class="features-list">
+        <li><strong>joblib & BytesIO:</strong> We needed to serialize our trained Machine Learning models to store them directly in the database as binary objects (BLOBs).</li>
+        <li><strong>RandomForestClassifier:</strong> We chose this meta-estimator because it combines multiple decision trees. It is highly effective for classification tasks like identifying users based on typing rhythm.</li>
+        <li><strong>sqlite3:</strong> Chosen for its simplicity and local storage capabilities, perfect for this scale of prototype.</li>
+        <li><strong>face_recognition (with cv2):</strong> We used <code>cv2</code> for video capture and <code>face_recognition</code> (based on dlib) for the heavy lifting. Crucially, we specified the <strong>CNN model</strong> over HOG for better accuracy, even though it requires more processing power.</li>
+    </ul>
+
+    <h4>1.2 Database Design</h4>
+    <p>We designed two primary tables: one for users and one for their biometric keystroke data.</p>
+
+    <p><strong>The Users Table:</strong> We store the password as a BLOB (encrypted) and the face embedding as a BLOB. Note that the <code>username</code> is unique and mandatory.</p>
+    <pre><code class="command">cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password BLOB NOT NULL,
+    email TEXT NOT NULL,
+    face_embedding BLOB
+)
+""")</code></pre>
+
+    <p>
+        <strong>The Keystrokes Table:</strong> This table links to the <code>users</code> table via a Foreign Key. It stores the statistical features we extract from a user's typing: Mean and Standard Deviation for Hold Time (HT) and flight times (PPT, RRT, RPT).
+    </p>
+    <pre><code class="command">cursor.execute("""
+CREATE TABLE IF NOT EXISTS keystrokes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    ht_mean REAL, ht_std_dev REAL,
+    ppt_mean REAL, ppt_std_dev REAL,
+    rrt_mean REAL, rrt_std_dev REAL,
+    rpt_mean REAL, rpt_std_dev REAL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+)
+""")</code></pre>
+
+    <h3>2. Implementing Facial Recognition</h3>
+    <p>
+        We implemented two core functions for facial biometrics: registration and authentication.
+    </p>
+
+    <h4>2.1 Registering a Face</h4>
+    <p>
+        The <code>register_face</code> function first asks for explicit permission. If granted, it attempts to capture a clear frame up to 10 times.
+    </p>
+    <pre><code class="input">def register_face(username, conn=None):
+response = messagebox.askquestion("Face Authentication", "Do you allow the app to access your camera?")
+if response != 'yes':
+    return False
+
+retries = 0
+max_retries = 10
+while not registered and retries < max_retries:
+    ret, frame = cap.read()
+    if not ret:
+        retries += 1
+        continue
+    
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    face_locations = face_recognition.face_locations(rgb_frame, model='cnn')
+    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+
+    if len(face_encodings) == 1:
+        face_embedding = np.array(face_encodings[0], dtype=np.float64).tobytes()
+        cursor.execute('UPDATE users SET face_embedding=? WHERE username=?', (sqlite3.Binary(face_embedding), username))
+        conn.commit()
+        registered = True</code></pre>
+    <p>
+        <strong>Decision:</strong> We convert BGR to RGB because <code>face_recognition</code> requires it. We strictly check <code>len(face_encodings) == 1</code> to ensure we are only registering a single, clear face.
+    </p>
+
+    <h4>2.2 Authenticating with Face</h4>
+    <p>
+        During login, <code>authenticate_face</code> compares the live camera feed against the stored embedding. We use Euclidean distance to measure similarity.
+    </p>
+    <pre><code class="input">if len(face_encodings) == 1:
+user_embedding = cursor.execute('SELECT face_embedding FROM users WHERE username=?', (username,))
+# ... fetch and convert buffer ...
+distance = np.linalg.norm(face_encodings[0] - user_embedding)
+if distance < 0.6:
+    return username</code></pre>
+    <p>
+        <strong>Decision:</strong> We set the distance threshold at <strong>0.6</strong>. If the calculated distance is lower than this, it's a match. If not, authentication fails.
+    </p>
+
+    <h3>3. Implementing Keystroke Dynamics (KD)</h3>
+    <p>
+        This system captures <em>how</em> a user types. This is critical for our idle timeout security logic.
+    </p>
+
+    <div class="image-container">
+        <img src="images/hold.png" alt="Learning Curve">
+        <span class="caption">Figure 3.1: Visualization of Keystroke Metrics (Hold Time vs Flight Time)</span>
+    </div>
+
+    <h4>3.1 Capturing Data</h4>
+    <p>
+        We use <code>on_key_press</code> and <code>on_key_release</code> events to log timestamps. We explicitly ignore modifier keys (Shift, Ctrl, Alt) to avoid noise in the data.
+    </p>
+    <pre><code class="input">def on_key_press_password(event):
+if event.keysym not in ["Shift_L", "Control_L", "Alt_L", "BackSpace", "Delete"]:
+    password_keystrokes["press_times"].append(time.time())
+def on_key_release_password(event): if event.keysym not in ["Shift_L", "Control_L", "Alt_L", "BackSpace", "Delete"]: password_keystrokes["release_times"].append(time.time())</code></pre>
+
+    <h4>3.2 Computing Features (The Math)</h4>
+    <p>
+        Raw timestamps aren't enough. We convert them into statistical features using <code>compute_keystroke_features</code> and <code>calculate_mean_and_std</code>.
+    </p>
+    <pre><code class="input">def calculate_mean_and_std(feature_list):
+mean = sum(feature_list) / len(feature_list)
+squared_diffs = [(x - mean) ** 2 for x in feature_list]
+variance = sum(squared_diffs) / (len(feature_list) - 1 if len(feature_list) > 1 else 1)
+std_dev = sqrt(variance)
+return mean, std_dev</code></pre>
+    <p>
+        <strong>The Metrics:</strong> We calculate the Mean and Standard Deviation for specific flight times (e.g., Press-to-Press, Release-to-Release). This provides a "fingerprint" of the user's typing rhythm.
+    </p>
+
+    <h4>3.3 Training the ML Model</h4>
+    <p>
+        When a user registers or logs in successfully, we retrain their personal model using <code>train_model</code>.
+    </p>
+    <pre><code class="input">def train_model(training_data, user_id, conn=None):
+required_features = ['ht_mean', 'ht_std_dev', 'ppt_mean', 'ppt_std_dev', ...]
+X = training_data[required_features]
+y = training_data['user_id']
+
+rf_model = RandomForestClassifier()
+rf_model.fit(X, y)
+
+# Serialize the model to store in DB
+model_stream = BytesIO()
+joblib.dump(rf_model, model_stream)
+serialized_model = model_stream.read()</code></pre>
+
+    <h4>3.4 Predicting the User</h4>
+    <p>
+        To verify a user, <code>predict_user_model</code> loads the serialized model and calculates the probability that the current typing belongs to the user.
+    </p>
+    <pre><code class="input">def predict_user_model(new_data, conn=None, threshold=0.7):
+# ... load model ...
+prediction = model.predict(X)
+probabilities = model.predict_proba(X)
+
+max_prob = max(probabilities[0])
+if max_prob >= threshold:
+    return prediction[0]
+else:
+    return 0</code></pre>
+    <p>
+        <strong>Decision:</strong> We set a strict threshold of <strong>0.7 (70%)</strong>. If the model is less than 70% confident, we treat it as an anomaly.
+    </p>
+
+    <h3>4. Application Logic: Registration & Login</h3>
+
+    <h4>4.1 User Registration (`register_user`)</h4>
+    <p>
+        The registration process is comprehensive. It validates inputs, ensures password strength (>8 chars), captures initial keystrokes, encrypts data, and registers the face.
+    </p>
+    
+    <div class="image-container">
+        <img src="images/registo.png" alt="Learning Curve">
+        <span class="caption">Figure 4.1: User Registration GUI with Password Strength and Biometric Consent.</span>
+    </div>
+
+    <pre><code class="input">def register_user():
+# Input validation
+if len(password) < 8: return # Strength check
+
+# Capture keystrokes
+features_1 = compute_keystroke_features(password_keystrokes)
+
+# Encrypt data
+hashed_password = hash_password(password)
+encryption_key = load_aes_key()
+encrypted_email = encrypt_data(email, encryption_key)
+
+# Insert into DB
+cursor.execute("INSERT INTO users ...", (username, hashed_password, encrypted_email))
+
+# Register Face
+face_registration_success = register_face(username, conn)
+if not face_registration_success:
+    conn.rollback() # Undo everything if face fails
+    return
+
+# Train initial model
+train_model(training_data, user_id, conn)</code></pre>
+
+    <h4>4.2 User Login (`login_user`)</h4>
+    <p>
+        Login requires passing the 2FA check (Face + Password). It also silently analyzes keystrokes to update the model or flag security issues.
+    </p>
+    <pre><code class="input">def login_user():
+# 1. Face Authentication
+if not authenticate_face(username):
+    return
+
+# 2. Password Check
+if verify_password(password, hashed_password):
+    
+    # 3. Keystroke Analysis
+    features_1 = compute_keystroke_features(password_keystrokes)
+    matched = predict_user_model(features_1, conn)
+    
+    if matched == user_id:
+        security_flag = False
+    else:
+        security_flag = True
+        send_security_alert_in_background(user_email)
+        # Trigger Physical Matrix request (See logic in flowchart)</code></pre>
+    <p>
+        If the keystroke pattern doesn't match, we enable a <code>security_flag</code>. This triggers a background email alert and forces the user to input a code from a Physical Matrix card.
+    </p>
+
+    <h4>4.3 Login After Idle (`loginAfterIDLE`)</h4>
+    <p>
+        To balance security with usability, if a session times out, we use <code>loginAfterIDLE</code>. This function skips the facial recognition (to be less intrusive) but enforces the keystroke check strictly via a pop-up password request.
+    </p>
+
+    <h3>5. Security Modules</h3>
+    <p>
+        We implemented a dedicated <code>security.py</code> file to handle encryption standards.
+    </p>
+    <pre><code class="input"># Generate 256-bit AES Key
+def generate_aes_key(): return os.urandom(32)
+
+Encrypt with AES-CFB
+def encrypt_data(plaintext, key): iv = os.urandom(16) cipher = Cipher(algorithms.AES(key), modes.CFB(iv), backend=default_backend()) return base64.b64encode(iv + ciphertext).decode()
+
+Hash Password with Bcrypt
+def hash_password(password): salt = bcrypt.gensalt() return bcrypt.hashpw(password.encode(), salt)</code></pre> <p> <strong>Decision:</strong> We used AES-256 in CFB mode for data encryption and Bcrypt for password hashing. The AES key is fetched securely via SSH from a Key Management Service (KMS) rather than being hardcoded. </p>
+
+    <h3>6. Experimental Phases & Results</h3>
+    <p>
+        We conducted a study with 3 users to test efficacy, efficiency, security, and privacy. The users had different password complexities:
+    </p>
+    <ul class="features-list">
+        <li><strong>User 1:</strong> Simple (12345678)</li>
+        <li><strong>User 2:</strong> Medium (qwerty@2023)</li>
+        <li><strong>User 3:</strong> Complex (Xx78yP!z9$5kLm)</li>
+    </ul>
+
+    <h4>Phase 1: Facial Recognition Tests</h4>
+    <p>We tested under Normal, Weak, and Mixed lighting.</p>
+    <ul class="features-list">
+        <li><strong>Normal Light:</strong> 100% success rate. Fast authentication (< 1s).</li>
+        <li><strong>Weak Light:</strong> Slower authentication (> 1.5s) but still accurate.</li>
+        <li><strong>Mixed Light:</strong> Most inconsistent performance (> 2s), but still successful.</li>
+    </ul>
+    <p class="alert"><strong>Result:</strong> The CNN model is robust but sensitive to lighting quality.</p>
+
+    <h4>Phase 2: Keystroke Pattern Tests</h4>
+    <p>We measured the probability of successful authentication over 10 attempts per user.</p>
+    <ul class="features-list">
+        <li><strong>User 1 (Simple):</strong> Very high success (Prob > 0.87). Simple patterns are easy for the ML to learn.</li>
+        <li><strong>User 3 (Complex):</strong> Initial struggle (Prob < 0.8) but achieved 1.0 (perfect match) by the final attempt.</li>
+    </ul>
+    
+    <div class="image-container">
+        <img src="images/resml.png" alt="Learning Curve">
+        <span class="caption">Figure 6.1: Learning Curve: Prediction Probability vs Number of Attempts.</span>
+    </div>
+
+    <p class="alert"><strong>Result:</strong> The ML model learns complex patterns effectively over time.</p>
+
+    <h4>Phase 3: Cross-Keystroke (Impostor) Tests</h4>
+    <p>We asked users to type <em>each other's</em> passwords to test for false positives.</p>
+    <ul class="features-list">
+        <li><strong>User 1 → User 2:</strong> Failed attempts (Good).</li>
+        <li><strong>User 2 → User 1:</strong> <strong>False Positives detected.</strong> Because User 1's password was so simple, User 2 was able to mimic the rhythm successfully in 2 out of 3 attempts.</li>
+        <li><strong>User 1 → User 3:</strong> 100% Rejection. The complex password rhythm could not be spoofed.</li>
+    </ul>
+    <p class="alert"><strong>Critical Finding:</strong> Password complexity is directly linked to the security of Keystroke Dynamics. Simple passwords lead to generic typing rhythms that are easier to spoof.</p>
+
+    <h4>Phase 4: Cross-Facial Tests</h4>
+    <p>We attempted to unlock User A's account with User B's face.</p>
+    <p><strong>Result:</strong> 100% failure rate for impostors. The system perfectly distinguished between users.</p>
+
+    <h3>7. Efficiency and Privacy Decisions</h3>
+    <ul class="installation-list">
+        <li><strong>Efficiency:</strong> We chose <strong>not</strong> to encrypt the <code>username</code>. It is restricted to numbers only (pseudonymization), so it poses no privacy risk. This allows for much faster database lookups compared to decrypting every username on login.</li>
+        <li><strong>Algorithm Choice:</strong> We compared XGBoost vs. RandomForest. RandomForest was chosen because it was faster to train (2 seconds less on average) and less prone to overfitting on our small dataset.</li>
+        <li><strong>Privacy:</strong> We implemented a forced "Terms and Conditions" popup to collect consent for biometric data processing, complying with GDPR requirements.</li>
+    </ul>
+
+    <h3>8. Future Work</h3>
+    <p>While successful, we identified areas for improvement:</p>
+    <ul class="features-list">
+        <li>Implement facial recognition checks during idle timeouts (currently only keystroke is checked).</li>
+        <li>Store raw facial images to allow for re-encoding if the face algorithm changes.</li>
+        <li>Conduct "Replay Attack" studies to see if recorded keystroke timings can spoof the system.</li>
+    </ul>
+
+</div>
+</section>
+
+<footer> <p>Marco Abreu &copy; 2026</p> </footer>
+
+</body> </html>
