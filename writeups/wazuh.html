@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wazuh SIEM Platform – Security Monitoring Case Study | Marco Abreu</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        :root {
+            --accent-color: #64ffda;
+        }
+
+        .features-list, .requirements-list, .installation-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li::before { content: "▹"; color: var(--accent-color); margin-right: 8px; }
+        .requirements-list li::before { content: "🖥️"; margin-right: 8px; }
+        .installation-list li::before { content: "💻"; margin-right: 8px; }
+
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #233554;
+        }
+        pre code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        pre code.input { color: #ffd86f; }
+        pre code.output { color: #8892b0; }
+
+        h3 {
+            margin-top: 40px;
+            color: #ccd6f6;
+        }
+
+        .section-title {
+            color: #e6f1ff;
+            border-bottom: 1px solid #233554;
+            padding-bottom: 10px;
+        }
+
+        .section img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            background: #0a192f;
+            border: 1px solid #233554;
+            border-radius: 4px;
+        }
+
+        .image-caption {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #8892b0;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .ref {
+            font-size: 0.85rem;
+            color: #8892b0;
+            margin-top: 5px;
+        }
+        .ref a { color: var(--accent-color); text-decoration: none; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        th {
+            background: #112240;
+            color: var(--accent-color);
+            padding: 10px 14px;
+            text-align: left;
+            border: 1px solid #233554;
+        }
+        td {
+            padding: 9px 14px;
+            border: 1px solid #233554;
+            color: #8892b0;
+        }
+        tr:nth-child(even) td { background: #0d1f3c; }
+
+        .tag-passed { color: #64ffda; font-weight: bold; }
+        .tag-failed { color: #ff6b6b; font-weight: bold; }
+
+        .info-box {
+            background: #112240;
+            border-left: 3px solid var(--accent-color);
+            padding: 14px 18px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+            color: #8892b0;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="../index.html">
+        <div class="logo">&lt;Marco Abreu /&gt;</div>
+    </a>
+    <ul class="nav-links">
+        <li><a href="../index.html#writeups">← Back to Write-Ups</a></li>
+    </ul>
+</nav>
+
+<header class="hero">
+    <div class="container">
+        <h1>Wazuh SIEM Platform – Security Monitoring Case Study</h1>
+        <p class="subtitle">
+            A comprehensive, hands-on deployment and evaluation of the open-source Wazuh SIEM platform,
+            covering proxy traffic analysis with MITRE ATT&CK, multi-OS security configuration assessments,
+            and WordPress hardening using custom SCA rule sets.
+        </p>
+        <a href="#report" class="btn">Read the Report</a>
+    </div>
+</header>
+
+<section id="report" class="section">
+    <div class="container">
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">1. Introduction</h2>
+        <!-- ============================================================ -->
+
+        <p>
+            Over the past decade, cyberattacks have grown substantially in frequency and sophistication.
+            The expansion of interconnected devices and digital infrastructure has dramatically enlarged
+            the attack surface available to adversaries. Exploitation of software vulnerabilities,
+            misconfigurations, and weak authentication practices has made it possible for attackers
+            to operate at scale, often using automated tooling to probe thousands of systems simultaneously.
+        </p>
+        <p>
+            In response, the field of cybersecurity has matured around several complementary defensive disciplines:
+            cryptography to protect data confidentiality and integrity, intrusion detection to monitor for suspicious
+            activity, firewalls to gate network traffic, multi-factor authentication, and VPN tunnels.
+            Among these, one of the most powerful—yet frequently under-deployed—approaches is
+            <strong>Security Information and Event Management (SIEM)</strong>.
+        </p>
+        <p>
+            SIEM systems aggregate, normalize, and correlate log data from across an entire infrastructure—firewalls,
+            web servers, operating systems, authentication services, and more—to surface anomalies and threats
+            in real time. Rather than responding reactively to known incidents, a well-tuned SIEM allows security
+            teams to detect early indicators of compromise, investigate patterns across multiple data sources,
+            and reduce mean time to response.
+        </p>
+        <p>
+            This report documents the end-to-end deployment and practical evaluation of <strong>Wazuh</strong>,
+            a free and open-source SIEM platform, within a real academic production environment—the Moodle
+            learning management system at the University of Madeira (UMa). Three distinct case studies are
+            presented, each targeting a different layer of the system: network traffic analysis, operating system
+            configuration hardening, and application-level security assessment.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">2. SIEM – Concepts and Background</h2>
+        <!-- ============================================================ -->
+
+        <h3>2.1 Security Information Management (SIM)</h3>
+        <p>
+            Security Information Management (SIM) is the precursor to modern SIEM. Its core function is
+            the <strong>collection, storage, and historical analysis of log data</strong> from diverse sources such
+            as servers, firewalls, routers, intrusion prevention systems, and web proxies. SIM platforms
+            normalize this information into a centralized repository, enabling retrospective threat hunting and
+            pattern analysis over long time horizons.
+        </p>
+
+        <img src="images/SIM.png" alt="SIM characteristics diagram" width="300">
+        <p class="image-caption"><strong>Figure 2.1:</strong> Core characteristics of a Security Information Management platform</p>
+
+        <p>
+            Log files produced by systems contain structured records that describe every event occurring on a device.
+            A typical log entry includes the following fields:
+        </p>
+        <ul class="features-list">
+            <li><strong>Timestamp</strong> – The exact moment the event occurred, critical for sequencing an attack timeline.</li>
+            <li><strong>Source</strong> – The device or process that generated the event, enabling targeted investigation.</li>
+            <li><strong>User Information</strong> – Identity of the user account responsible for triggering the event.</li>
+            <li><strong>Event Description</strong> – A human-readable summary of what occurred.</li>
+            <li><strong>Event ID</strong> – A unique identifier enabling precise filtering and correlation.</li>
+            <li><strong>Severity Level</strong> – A classification indicating the potential threat level, used to prioritize triage.</li>
+        </ul>
+        <p>Logs can be categorized into the following primary types:</p>
+        <ul class="features-list">
+            <li><strong>Application Logs</strong> – Record sequences of application events including authentication activity, user actions, and errors.</li>
+            <li><strong>Security Logs</strong> – Sourced from firewalls and security services; capture failed authentications, suspicious activity, and penetration attempts.</li>
+            <li><strong>System Logs</strong> – Generated by the OS and its applications; include boot events, crashes, and user activity.</li>
+            <li><strong>Network Logs</strong> – Produced by routers and switches; record traffic flows, IP addresses, and protocols in use.</li>
+        </ul>
+
+        <p>Below is an example of a <strong>Security Log</strong> from a Windows system, recording a successful logon:</p>
+
+        <pre><code class="output">Audit Success  05/03/2025 17:00:46
+Microsoft-Windows-Security-Auditing 4624
+Logon  "An account was successfully logged on."
+Subject:
+  Security ID:      SYSTEM
+  Account Name:     LAPTOP-1E39BHAS\$
+  Account Domain:   WORKGROUP
+  Logon ID:         0x3E7
+Logon Information:
+  Logon Type:       5
+  New Logon:
+  Security ID:      SYSTEM
+  Account Name:     SYSTEM
+  Account Domain:   NT AUTHORITY
+  Logon ID:         0x3E7
+Process Information:
+  Process ID:       0x390
+  Process Name:     C:\Windows\System32\services.exe</code></pre>
+
+        <p>Key observations from this entry: Event ID <code>4624</code> maps to a successful login. The logon type <code>5</code> indicates a service-initiated session. The originating process is <code>services.exe</code>, consistent with expected system behavior.</p>
+
+        <p>An example of an <strong>Application Log</strong>, recording a restart failure in Microsoft Office:</p>
+
+        <pre><code class="output">Warning  05/03/2025 16:09:03  Microsoft-Windows-RestartManager
+10010  None  Cannot restart application
+'C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE' (PID 8212)
+- Application SID does not match Conductor SID.</code></pre>
+
+        <p>And a <strong>Network Log</strong> from Windows WebIO, confirming a completed HTTP transaction:</p>
+
+        <pre><code class="output">Information  05/03/2025 17:21:49  Microsoft-Windows-WebIO 115
+ResponseRecieveEntity 0x298e64a9900: WebHttpReceiveEntityBody
+(Identifier: 0xFD0000053000000A) (Flags: 0x0)
+Information  05/03/2025 17:21:49  Microsoft-Windows-WebIO 2141
+RequestState 0x298e64a9900: =====Request Completed=====
+Information  05/03/2025 17:21:49  Microsoft-Windows-WebIO 2132
+RequestState 0x298e64a9900: =====Reception Completed=====</code></pre>
+
+        <p>
+            SIM's principal advantages are its centralized historical view of system activity, the automation
+            of log ingestion (which is prohibitively time-consuming to perform manually at scale), and its
+            capacity to produce compliance reports. Its limitations include high implementation cost, an inability
+            to detect threats in real time, and large storage requirements.
+        </p>
+
+        <h3>2.2 Security Event Management (SEM)</h3>
+
+        <p>
+            Where SIM excels at historical analysis, Security Event Management (SEM) focuses on
+            <strong>real-time threat monitoring, event correlation, and active alerting</strong>.
+            SEM platforms ingest security events—syslogs, Windows Event Logs, SNMP traps—either
+            through software agents installed directly on monitored hosts or through agentless collection
+            from network devices such as firewalls and routers.
+        </p>
+
+        <img src="images/SEM.png" alt="SEM characteristics diagram" width="300">
+        <p class="image-caption"><strong>Figure 2.2:</strong> Core characteristics of a Security Event Management platform</p>
+
+        <p>
+            The following is a first syslog example, generated by a disk health monitoring process:
+        </p>
+
+        <pre><code class="output">May 11 10:40:48 scrooge disk-health-nurse[26783]: [ID 702911
+user.error] m:SY-mon-full-500 c:H : partition health measures
+for /var did not suffice - still using 96% of partition space</code></pre>
+
+        <p>
+            This entry reveals: timestamp (<code>May 11 10:40:48</code>), device identifier (<code>scrooge</code>),
+            originating process (<code>disk-health-nurse[26783]</code>), event ID (<code>702911 user.error</code>),
+            and a description indicating that disk partition health thresholds were not met.
+        </p>
+
+        <img src="images/syslog.png" alt="Second syslog example showing Cisco PIX firewall syslog structure with Timestamp, Device-id, Facility Code, Severity Level, Message Number, and Message Text fields" width="400">
+        <p class="image-caption"><strong>Figure 2.3:</strong> Anatomy of a syslog entry</p>
+
+        <p>
+            The second syslog example, from a Cisco PIX firewall, shows: timestamp (<code>Nov 03 2003 21:27:27</code>),
+            device ID (<code>pix-f</code>), severity level (<code>5</code> — informational), message code (<code>111008</code>),
+            and message text confirming that user <code>enable15</code> executed a configuration command.
+        </p>
+
+        <p>
+            SEM's key advantages include real-time threat response capability and the use of statistical
+            correlation algorithms to surface genuine security incidents from noisy event streams. Its
+            limitations include weak log management compared to dedicated SIM platforms, and the privacy
+            implications of agent-based monitoring that records all user activity on a device.
+        </p>
+
+        <h3>2.3 SIEM – The Fusion of SIM and SEM</h3>
+
+        <p>
+            In 2005, analysts Mark Nicolett and Amrit Williams of Gartner proposed combining the complementary
+            strengths of SIM and SEM into a unified discipline: <strong>Security Information and Event Management (SIEM)</strong>.
+            SIEM addresses the weaknesses of each individual approach—SIM's lack of real-time visibility
+            and SEM's poor log management—by integrating both into a single platform.
+        </p>
+
+        <img src="images/SIEM.png" alt="SIEM" width="500">
+        <p class="image-caption"><strong>Figure 2.4:</strong> Full feature set of a modern SIEM platform</p>
+
+        <img src="images/SIEMCP.png" alt="SIEMCP" width="500">
+        <p class="image-caption"><strong>Figure 2.5:</strong> The core processing pipeline within a SIEM system</p>
+
+        <p>A SIEM operates through four sequential stages:</p>
+
+        <h4>Stage 1 — Data Collection</h4>
+        <p>
+            Data can be collected via two methods. In the <strong>agentless</strong> method, network devices
+            and applications send their raw logs directly to the SIEM's central repository. This is simpler
+            to set up but offers less visibility. In the <strong>agent-based</strong> method, a lightweight
+            software agent is installed on each monitored host. The agent performs local pre-processing
+            (normalization and filtering) before forwarding condensed, enriched data to the server.
+            Agent-based collection enables real-time per-host monitoring and reduces the processing burden
+            on the central server.
+        </p>
+
+        <h4>Stage 2 — Normalization and Storage</h4>
+        <p>
+            Raw log data arrives in dozens of incompatible formats. Normalization converts this heterogeneous
+            data into a common schema, making correlation possible. The normalized output is then persisted
+            in a centralized repository for both real-time analysis and long-term forensic investigation.
+            A normalized log entry looks like this:
+        </p>
+        <pre><code class="output">Aug 11 17:22:14 auth0 access denied for userId 34532
+Daniel Berman 182.54.12.98
+[11/Aug/2017:17:22:14 -0300] 182.54.12.98
+authentication failed at login 34532 user Daniel Berman</code></pre>
+
+        <h4>Stage 3 — Filtering</h4>
+        <p>
+            SIEM platforms ingest enormous volumes of events. Filtering reduces this noise by discarding
+            irrelevant or low-value events and eliminating duplicate or empty fields before correlation is
+            performed. This step is critical for maintaining system performance and analyst focus.
+        </p>
+
+        <h4>Stage 4 — Aggregation, Correlation, and Visualization</h4>
+        <p>
+            Correlated events are analyzed against rule sets to identify patterns indicative of security incidents.
+            A simple correlation rule might be: <em>"If more than 10 failed login attempts occur within 2 minutes
+            from the same source IP, alert the security team."</em>
+        </p>
+
+        <img src="images/correlation.png" alt="Correlation" width="500">
+        <p class="image-caption"><strong>Figure 2.6:</strong> Structure of a SIEM correlation rule</p>
+
+        <p>
+            Results are surfaced through an interactive dashboard, offering both real-time and historical views.
+            The Wazuh dashboard below illustrates several key panels: total alert count, high-severity alert
+            breakdown, failed vs. successful authentications, temporal distribution of alerts by severity level,
+            threat category breakdown (MITRE ATT&CK tactics), and per-agent alert distribution.
+        </p>
+
+        <img src="images/dashboard.png" alt="Dashboard" width="600">
+        <p class="image-caption"><strong>Figure 2.7:</strong> Wazuh SIEM dashboard providing a comprehensive security overview</p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">3. SIEM Platform Comparison</h2>
+        <!-- ============================================================ -->
+
+        <p>
+            Before selecting Wazuh for this deployment, a structured comparison was performed across four
+            representative SIEM platforms drawn from Gartner's 2021 Magic Quadrant for SIEM. Two commercial
+            leaders (Splunk and LogRhythm) and two open-source options (AlienVault OSSIM and Wazuh) were evaluated.
+        </p>
+
+        <h3>3.1 Splunk Enterprise Security</h3>
+        <p>
+            Splunk has held a Leader position in Gartner's Magic Quadrant for nine consecutive years.
+            It provides real-time log collection and indexing, an advanced search language (SPL — Search Processing
+            Language), machine learning-driven anomaly detection, interactive dashboards and reports,
+            customizable security alerts, and a rich ecosystem of certified integrations. The primary drawback
+            is its licensing cost, which places it out of reach for many organizations.
+        </p>
+
+        <h3>3.2 LogRhythm</h3>
+        <p>
+            LogRhythm specializes directly in SIEM and combines traditional log management with
+            AI-driven analysis and automated incident response. Notable capabilities include geolocation
+            visualization of event origins, file integrity monitoring, endpoint forensics, and case management
+            workflows designed to prevent alerts from being missed. Like Splunk, it is a commercial product
+            with associated licensing costs.
+        </p>
+
+        <h3>3.3 AlienVault OSSIM</h3>
+        <p>
+            AlienVault OSSIM is the leading open-source SIEM alternative. It supports three distinct
+            correlation modes (logical, cross-correlation, and inventory correlation) and includes a unique
+            community threat intelligence sharing platform called Open Threat Exchange (OTX). However,
+            it lacks AI and machine learning capabilities, and its log collection and analysis features
+            are comparatively limited.
+        </p>
+
+        <h3>3.4 Feature Comparison Matrix</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Splunk</th>
+                    <th>LogRhythm</th>
+                    <th>AlienVault OSSIM</th>
+                    <th>Wazuh</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Log Collection &amp; Analysis</td><td>✅</td><td>✅</td><td>❌</td><td>✅</td></tr>
+                <tr><td>Reports</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                <tr><td>Alerts</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                <tr><td>Machine Learning</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>Forensic Analysis</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                <tr><td>Incident Response</td><td>✅</td><td>✅</td><td>❌</td><td>✅</td></tr>
+                <tr><td>Open Source</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+                <tr><td>Free to Use</td><td>❌</td><td>❌</td><td>✅</td><td>✅</td></tr>
+                <tr><td>Artificial Intelligence</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                <tr><td>Threat Intelligence</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                <tr><td>Threat Sharing Platform</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td></tr>
+                <tr><td>Geolocation</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+            </tbody>
+        </table>
+
+        <p>
+            Wazuh was selected for this deployment due to its combination of comprehensive core SIEM features,
+            active response capabilities, open-source licensing, and zero cost. While it lacks AI/ML-driven
+            detection, its rule-based engine—augmented with the MITRE ATT&CK framework and CIS Benchmarks—
+            provides robust detection coverage for the target environment.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">4. Wazuh Platform Architecture</h2>
+        <!-- ============================================================ -->
+
+        <p>
+            Wazuh is a free, open-source SIEM and XDR (Extended Detection and Response) platform. It unifies
+            endpoint monitoring, log analysis, vulnerability detection, configuration assessment, file integrity
+            monitoring, and active incident response into a single cohesive platform. It is highly configurable
+            and scales from small environments to enterprise deployments.
+        </p>
+
+        <h3>4.1 Data Flow Overview</h3>
+
+        <img src="images/flow.png" alt="Wazuh data flow diagram" width="700">
+        <p class="image-caption"><strong>Figure 4.1:</strong> End-to-end data flow across the Wazuh platform components</p>
+
+        <p>
+            The data flow begins with agents installed on monitored endpoints. These agents collect local
+            telemetry—logs, system events, file integrity changes, vulnerability data—and transmit it over
+            an encrypted channel to the central server. The server decodes and enriches the data using rules,
+            indicators of compromise (IOCs), and threat intelligence feeds, then generates structured alerts.
+            The indexer stores and indexes these alerts for near-real-time search and retrieval.
+            Finally, the dashboard presents this information to security analysts through interactive panels
+            and drill-down views.
+        </p>
+
+        <h3>4.2 Agent Architecture</h3>
+
+        <img src="images/agent.png" alt="Wazuh agent modular architecture" width="700">
+        <p class="image-caption"><strong>Figure 4.2:</strong> Wazuh agent modular architecture</p>
+
+        <p>
+            The Wazuh agent runs on Linux, Windows, macOS, Solaris, and AIX. Its modular design allows
+            individual capabilities to be enabled or disabled per deployment requirement. Key modules include:
+        </p>
+        <ul class="features-list">
+            <li><strong>Log Collector</strong> – Ingests logs, events, and messages from OS facilities, firewalls, and applications.</li>
+            <li><strong>Command Execution</strong> – Executes administrator-defined commands (e.g., listing active sessions) and forwards results to the server.</li>
+            <li><strong>File Integrity Monitoring (FIM)</strong> – Tracks creation, modification, deletion, and permission changes on critical files.</li>
+            <li><strong>Security Configuration Assessment (SCA)</strong> – Continuously evaluates system configurations against CIS Benchmark policy sets.</li>
+            <li><strong>System Inventory</strong> – Periodically scans installed applications, running processes, and network interfaces.</li>
+            <li><strong>Malware Detection</strong> – Uses threat intelligence and IOC matching to identify hidden processes and malicious files.</li>
+            <li><strong>Active Response</strong> – Automatically blocks network connections, terminates processes, or removes malicious files when a threat is confirmed.</li>
+            <li><strong>Container Security Monitoring</strong> – Interfaces with the Docker Engine API to monitor containerized environments.</li>
+            <li><strong>Cloud Security Monitoring</strong> – Connects directly to AWS, Azure, and GCP APIs to monitor cloud infrastructure.</li>
+        </ul>
+
+        <h3>4.3 Indexer</h3>
+        <p>
+            The Wazuh Indexer is a full-text search and analytics engine built on OpenSearch. It stores
+            alerts as JSON documents in four primary index topics:
+        </p>
+        <ul class="features-list">
+            <li><code>wazuh-alerts</code> — Alerts triggered when events match a defined rule.</li>
+            <li><code>wazuh-archives</code> — All raw events, regardless of whether they matched a rule.</li>
+            <li><code>wazuh-monitoring</code> — Agent connection state (active, disconnected, never connected).</li>
+            <li><code>wazuh-statistics</code> — Server performance metrics.</li>
+        </ul>
+        <p>The following example query retrieves the most recent lateral movement event using SSH:</p>
+
+        <pre><code class="command">GET /wazuh-alerts-4.x-*/_search</code><code class="input">
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"rule.mitre.tactic": "Lateral Movement"}},
+        {"term": {"rule.mitre.technique": "SSH"}}
+      ]
+    }
+  },
+  "sort": [{"timestamp": {"order": "desc"}}],
+  "size": 1
+}</code></pre>
+
+        <p>A sample response from this query:</p>
+
+        <pre><code class="output">{
+  "timestamp": "2022-04-24T17:24:56.110+0000",
+  "agent": {"ip": "10.0.1.52", "name": "Amazon", "id": "001"},
+  "data": {"srcip": "68.183.216.91", "srcport": "53820"},
+  "rule": {
+    "description": "sshd: insecure connection attempt (scan).",
+    "id": "5706",
+    "level": 6,
+    "mitre": {
+      "technique": ["SSH"],
+      "id": ["T1021.004"],
+      "tactic": ["Lateral Movement"]
+    }
+  },
+  "GeoLocation": {
+    "city_name": "Frankfurt am Main",
+    "country_name": "Germany",
+    "region_name": "Hesse"
+  }
+}</code></pre>
+
+        <h3>4.4 Server</h3>
+
+        <img src="images/server.png" alt="Wazuh server internal component architecture" width="700">
+        <p class="image-caption"><strong>Figure 4.3:</strong> Wazuh server internal component architecture</p>
+
+        <p>
+            The server is the processing core of the platform. It receives encrypted telemetry from agents,
+            decodes and enriches it through the analysis engine, applies rule-based and IOC-based detection,
+            and generates structured security alerts forwarded to the indexer via Filebeat.
+            Key server components include the <strong>Analysis Engine</strong> (event decoding, correlation,
+            and alert generation), the <strong>Wazuh RESTful API</strong> (programmatic platform management),
+            and the <strong>Wazuh Cluster Daemon</strong> (horizontal scaling and multi-server synchronization).
+        </p>
+
+        <h3>4.5 Dashboard and API Console</h3>
+        <p>
+            The Wazuh Dashboard provides a graphical interface for navigating security events, reviewing agent
+            status, exploring generated reports, managing platform configuration, and creating custom detection rules.
+            It also includes a built-in API console for direct platform interaction.
+        </p>
+
+        <img src="images/API.png" alt="Wazuh API console demonstrating real-time platform queries" width="600">
+        <p class="image-caption"><strong>Figure 4.4:</strong> Wazuh API console demonstrating real-time platform queries</p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">5. Deployment Environment</h2>
+        <!-- ============================================================ -->
+
+        <p>
+            Wazuh was deployed on an Ubuntu 22.04 host within the University of Madeira's infrastructure,
+            following the compact installation model (all three server-side components—indexer, server, and
+            dashboard—on a single machine). Three monitored systems were enrolled as Wazuh agents.
+        </p>
+
+        <img src="images/arch.png" alt="Wazuh monitored environment architecture" width="700">
+        <p class="image-caption"><strong>Figure 5.1:</strong> Architecture of the monitored environment — Moodle Proxy, Application Server, and Database</p>
+
+        <h3>5.1 Proxy Server</h3>
+        <p>
+            The proxy acts as the outermost layer of the architecture, receiving all external HTTP/HTTPS
+            requests and forwarding only authorized traffic to the Moodle application server. Given its
+            direct exposure to the internet, it is the component most frequently targeted by automated
+            scanning tools, bots, and adversarial probes.
+        </p>
+        <p>
+            <strong>OS:</strong> CentOS 8 | <strong>Kernel:</strong> 5.4.203 | <strong>Role:</strong> Reverse proxy, access control, traffic filtering
+        </p>
+
+        <h3>5.2 Moodle Application Server</h3>
+        <p>
+            Moodle is an open-source learning management platform used by students, faculty, and administrators
+            at UMa. It handles personal and sensitive academic data and must enforce strict access control.
+            While the proxy filters port-80 traffic, direct requests to the application layer are possible,
+            making it susceptible to attacks such as SQL injection and brute force credential attacks.
+        </p>
+        <p>
+            <strong>OS:</strong> Debian 11 | <strong>Kernel:</strong> 5.15.104 | <strong>Web Server:</strong> Apache 2.4.54 | <strong>Moodle Version:</strong> 4.0.2
+        </p>
+
+        <h3>5.3 Database Server</h3>
+        <p>
+            The database stores all Moodle content and user data. It is only reachable from the Moodle
+            application server, reducing its exposure surface. However, threats such as SQL injection from
+            a compromised application layer, unauthorized access, and data exfiltration remain relevant risks.
+        </p>
+        <p>
+            <strong>OS:</strong> OpenSUSE 15.4 | <strong>Kernel:</strong> 5.15.104 | <strong>Database:</strong> MariaDB 10.6.10
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">6. Case Study 1 — Proxy Traffic Analysis with MITRE ATT&CK</h2>
+        <!-- ============================================================ -->
+
+        <h3>6.1 Objective</h3>
+        <p>
+            This case study aimed to analyze one week of traffic recorded at the proxy (May 4–11) using
+            Wazuh's integrated MITRE ATT&CK framework. The goal was to identify attacker tactics and
+            techniques in use against the system, understand attacker intent from a defender's perspective,
+            and surface specific targets being probed to inform hardening decisions.
+        </p>
+
+        <div class="info-box">
+            <strong>MITRE ATT&CK</strong> is an open-source knowledge base cataloguing adversary tactics,
+            techniques, and procedures (TTPs). Its integration within Wazuh allows events to be automatically
+            tagged with the corresponding ATT&CK technique, transforming raw log events into actionable
+            threat intelligence.
+        </div>
+
+        <h3>6.2 Observed ATT&CK Tactics</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Tactic ID</th>
+                    <th>Tactic Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>TA0043</td>
+                    <td>Reconnaissance</td>
+                    <td>Active or passive collection of information about the target organization, infrastructure, or personnel.</td>
+                </tr>
+                <tr>
+                    <td>TA0005</td>
+                    <td>Defense Evasion</td>
+                    <td>Techniques such as process injection, obfuscation, or disabling security software to avoid detection.</td>
+                </tr>
+                <tr>
+                    <td>TA0007</td>
+                    <td>Discovery</td>
+                    <td>Using native OS tools to learn about the system and internal network before deciding how to act.</td>
+                </tr>
+                <tr>
+                    <td>TA0004</td>
+                    <td>Privilege Escalation</td>
+                    <td>Exploiting weaknesses, misconfigurations, or vulnerabilities to obtain elevated permissions.</td>
+                </tr>
+                <tr>
+                    <td>TA0001</td>
+                    <td>Initial Access</td>
+                    <td>Techniques that use various entry vectors to gain an initial foothold in the network.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>
+            The two most frequently observed tactics were <strong>Reconnaissance (T1595.002 — Vulnerability Scanning)</strong>
+            and <strong>Defense Evasion (T1055 — Process Injection)</strong>. All recorded events carried a severity
+            level of 10, and every rule description pointed to HTTP 400-series error codes from the same IP range,
+            indicating large-scale automated scanning behavior rather than targeted manual attacks.
+        </p>
+
+        <h3>6.3 Reconnaissance – Vulnerability Scanning (T1595.002)</h3>
+
+        
+        <img src="images/attacks.png" alt="Attack origin countries and most frequently targeted URL paths over the analysis period" width="700">
+        <p class="image-caption"><strong>Figure 6.1 &amp; 6.2:</strong> Attack origin countries and most frequently targeted URL paths over the analysis period</p>
+
+        <p>
+            The attack origin data shows the United States, Germany, and Russia as the top three source
+            countries. Given the automated nature of these events, these likely represent VPS infrastructure
+            and cloud exit nodes used by botnets rather than attackers physically located in those countries.
+        </p>
+        <p>The most targeted URL paths tell a clear story about attacker intent:</p>
+        <ul class="features-list">
+            <li><strong><code>*</code> (wildcard, 370 events)</strong> – Broad scanning across all available paths, consistent with automated crawlers seeking any exploitable surface.</li>
+            <li><strong><code>/.env</code> and variants (30+ combined events)</strong> – Attempts to access environment files that commonly store database credentials, API keys, and other sensitive configuration values. A successful read of <code>.env</code> could grant full access to the database.</li>
+            <li><strong><code>/mod/forum/discuss.php?d=1874</code> (33 events)</strong> – Targeted probing of a specific Moodle forum thread, likely attempting to identify vulnerable Moodle components or enumerate accessible content.</li>
+            <li><strong><code>/.aws/credentials</code> (11 events)</strong> – Probing for exposed AWS credential files that could enable cloud infrastructure takeover.</li>
+            <li><strong><code>/kz117ijxw0w1darpewhisvvzqpfuos27</code> (38 events)</strong> – A random-looking path string, consistent with automated tools testing for path traversal or misconfigured file access.</li>
+        </ul>
+
+        <h3>6.4 Defense Evasion – Process Injection (T1055)</h3>
+
+        <img src="images/common.png" alt="Target distribution for the T1055 Process Injection technique" width="400">
+        <p class="image-caption"><strong>Figure 6.3:</strong> Target distribution for the T1055 Process Injection technique</p>
+
+        <p>
+            Seven events were attributed to the T1055 Process Injection technique, all originating from
+            United States-based IP addresses. Two specific targets were recorded:
+        </p>
+
+        <p>
+            <strong>Target 1: <code>/server-status</code></strong> — This endpoint is a built-in Apache diagnostic
+            page that, if publicly exposed, reveals the server's current uptime, active connections, request
+            rates, and worker thread status. This intelligence would allow an attacker to identify peak traffic
+            periods, understand server capacity, and potentially coordinate denial-of-service timing.
+            Wazuh's security report confirmed this attack returned HTTP 404:
+        </p>
+
+        <pre><code class="output">"data": {
+  "protocol": "GET",
+  "srcip": "35.216.237.60",
+  "id": "404",
+  "url": "/server-status"
+}</code></pre>
+
+        <p>
+            <strong>Target 2: <code>/.env.bak</code></strong> — Backup copies of <code>.env</code> files are often
+            left behind after server configuration changes and may be publicly accessible even when the primary
+            <code>.env</code> is correctly secured. A successful read of this file could expose database
+            credentials, potentially enabling an attacker to delete the production database and demand a ransom.
+            This attack also returned HTTP 404:
+        </p>
+
+        <pre><code class="output">"data": {
+  "protocol": "POST",
+  "srcip": "3.142.194.198",
+  "id": "404",
+  "url": "/.env.bak"
+}</code></pre>
+
+        <h3>6.5 Case Study 1 – Conclusions</h3>
+        <p>
+            All attacks recorded during the one-week analysis period returned HTTP 404 or 405 response codes,
+            confirming that no information was successfully accessed and no security boundaries were breached.
+            The proxy demonstrated robust defensive behavior, correctly blocking all probed paths.
+        </p>
+        <p>
+            The predominance of Reconnaissance and Defense Evasion tactics indicates that adversaries are
+            in an early-stage probing phase—seeking entry points and sensitive files rather than executing
+            a targeted, pre-planned attack. The MITRE ATT&CK integration in Wazuh was invaluable for
+            reframing raw HTTP error logs as structured threat intelligence, enabling a clear characterization
+            of attacker behavior and intent.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">7. Case Study 2 — Security Configuration Assessment Across Operating Systems</h2>
+        <!-- ============================================================ -->
+
+        <h3>7.1 Objective</h3>
+        <p>
+            This case study evaluated the Security Configuration Assessment (SCA) module across the three
+            operating systems in the monitored environment: CentOS 8 (Proxy), Debian 11 (Moodle), and
+            OpenSUSE 15.4 (Database). The SCA module was enabled in each agent's configuration file:
+        </p>
+
+        <pre><code class="input">&lt;sca&gt;
+  &lt;enabled&gt;yes&lt;/enabled&gt;
+  &lt;scan_on_start&gt;yes&lt;/scan_on_start&gt;
+  &lt;interval&gt;12h&lt;/interval&gt;
+  &lt;skip_nfs&gt;yes&lt;/skip_nfs&gt;
+&lt;/sca&gt;</code></pre>
+
+        <p>
+            The SCA module automatically detects the running OS and applies the appropriate
+            CIS (Center for Internet Security) Benchmark policy set, running a series of automated
+            control tests and generating a score, a list of passed/failed checks, and remediation guidance
+            for each failure.
+        </p>
+
+        <h3>7.2 CentOS 8 — SCA Results</h3>
+        <p>
+            <strong>Assessment date:</strong> May 23, 2025, 16:25 | <strong>Policy:</strong> CIS Benchmark for CentOS Linux 8<br>
+            <strong>Results:</strong> 186 rules applied — 85 passed, 66 failed, 35 not applicable | <strong>Score: 56%</strong>
+        </p>
+        <p>
+            Primary failure categories included temporary directory mount configurations, directory permission
+            settings, network and firewall configurations, and file permission hardening.
+        </p>
+        <p>
+            <strong>Highlighted failure — Rule 6504</strong>: The <code>/tmp</code> directory was not configured
+            as a separate mount point. This misconfiguration could allow an attacker to plant executable code
+            in <code>/tmp</code> or establish a hardlink to receive a copy of any program updates automatically.
+        </p>
+
+        
+        <img src="images/6504.png" alt="Rule 6504 — /tmp configuration failure with remediation guidance" width="600">
+        <p class="image-caption"><strong>Figure 7.1:</strong> Rule 6504 — /tmp configuration failure with remediation guidance</p>
+
+        <p>
+            The SCA tool provided a clear remediation path: mount <code>tmpfs</code> on <code>/tmp</code>
+            or create a dedicated partition for it, and configure the <code>noexec</code> mount option to prevent
+            execution of code stored in that directory.
+        </p>
+
+        <h3>7.3 Debian 11 — SCA Results</h3>
+        <p>
+            <strong>Assessment date:</strong> May 24, 2025, 04:30 | <strong>Policy:</strong> CIS Benchmark for Debian/Linux 10<br>
+            <strong>Results:</strong> 192 rules applied — 67 passed, 108 failed, 17 not applicable | <strong>Score: 38%</strong>
+        </p>
+        <p>
+            The lower score is partly attributable to the use of a Debian 10 benchmark against a Debian 11
+            system, which may produce additional false failures due to version-specific differences. Despite this,
+            the test set revealed real and significant security gaps.
+        </p>
+        <p>
+            <strong>Highlighted failure — Rule 2667</strong>: The system did not have account lockout configured
+            for repeated failed password attempts. Without lockout, the system is highly vulnerable to
+            brute-force credential attacks.
+        </p>
+
+        <img src="images/2667.png" alt="Rule 2667 — Account lockout misconfiguration and PAM remediation guidance" width="600">
+        <p class="image-caption"><strong>Figure 7.2:</strong> Rule 2667 — Account lockout misconfiguration and PAM remediation guidance</p>
+
+        <p>
+            The remediation involves editing <code>/etc/pam.d/common-auth</code> to add the <code>pam_tally2</code>
+            module, which counts consecutive failed logins and locks the account after a configurable threshold.
+            It also requires corresponding entries in <code>/etc/pam.d/common-account</code> to enforce the lockout.
+        </p>
+        <p>
+            It was observed that the SCA run on this system did not include Apache configuration checks,
+            despite Wazuh supporting Apache policy sets. This was attributed to a missing agent configuration
+            directive to load the additional policy file—a correctable configuration gap.
+        </p>
+
+        <h3>7.4 OpenSUSE 15.4 — SCA Results</h3>
+        <p>
+            <strong>Assessment date:</strong> May 24, 2025, 04:18 | <strong>Policy:</strong> CIS Benchmark for Linux (generic auditing)<br>
+            <strong>Results:</strong> 23 rules applied — 3 passed, 12 failed, 8 not applicable | <strong>Score: 20%</strong>
+        </p>
+        <p>
+            No CentOS or Debian-specific policy existed for OpenSUSE, so the generic Linux auditing benchmark
+            was applied. This limited the test coverage significantly—only 23 checks vs. 186+ for the other systems—
+            and focused primarily on SSH hardening. Despite this, a high-impact failure was identified and remediated.
+        </p>
+        <p>
+            <strong>Highlighted failure — Rule 3008</strong>: The SSH daemon's <code>MaxAuthTries</code>
+            parameter was set to 5, exceeding the CIS-recommended maximum of 4. Reducing this value
+            limits the number of password attempts an attacker can make per SSH connection before being
+            disconnected, reducing brute-force attack effectiveness.
+        </p>
+
+        
+        <img src="images/3008.png" alt="Rule 3008 — SSH MaxAuthTries hardening (shown post-remediation as Passed)" width="600">
+        <p class="image-caption"><strong>Figure 7.3:</strong> Rule 3008 — SSH MaxAuthTries hardening (shown post-remediation as Passed)</p>
+
+        <p>
+            The remediation was straightforward: update <code>MaxAuthTries 4</code> in <code>/etc/ssh/sshd_config</code>
+            and restart the SSH service. On the next scheduled SCA scan, the check was recorded as passed—
+            demonstrating the feedback loop between SCA findings and system hardening in practice.
+        </p>
+
+        <h3>7.5 Case Study 2 — Conclusions</h3>
+        <p>
+            The SCA module proved highly effective at identifying OS-level misconfigurations that could serve
+            as attack vectors. Each failed check was accompanied by a justification explaining the security
+            implication and concrete remediation steps, creating an actionable hardening roadmap for each system.
+        </p>
+        <p>
+            The assessment also highlighted a limitation: Wazuh ships with pre-defined policies only for
+            the most commonly deployed operating systems. For less common distributions like OpenSUSE,
+            a generic policy must be used, reducing coverage. However, the platform fully supports custom
+            policy creation, enabling teams to extend coverage to any environment.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">8. Case Study 3 — WordPress Security Assessment with Custom SCA Rules</h2>
+        <!-- ============================================================ -->
+
+        <h3>8.1 Objective</h3>
+        <p>
+            The two previous case studies demonstrated Wazuh SCA's effectiveness at the OS layer.
+            This case study extends that analysis to the <strong>application layer</strong>, evaluating a
+            WordPress installation using a custom-authored SCA policy that goes beyond the default rule set.
+        </p>
+        <p>
+            WordPress was selected due to its widespread deployment and the availability of a Wazuh-authored
+            reference policy. The custom policy was developed following Wazuh's official WordPress security
+            assessment guide. The WordPress instance was deployed on Debian Linux running Apache, monitored
+            by a Wazuh agent with SCA enabled.
+        </p>
+
+        <h3>8.2 Custom SCA Policy Definition</h3>
+        <p>
+            Since Wazuh ships without a WordPress-specific SCA policy, a custom policy was authored.
+            The following table describes all eleven checks included in the policy:
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Check ID</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>100000</td><td>Verify that the installed WordPress version is the latest available.</td></tr>
+                <tr><td>100001</td><td>Verify that <code>.htaccess</code> file permissions are set to 644.</td></tr>
+                <tr><td>100002</td><td>Verify that WordPress debug mode is disabled.</td></tr>
+                <tr><td>100003</td><td>Verify that no backup, SQL, or zip files exist in the WordPress root directory.</td></tr>
+                <tr><td>100004</td><td>Verify that common administrative account names (admin, administrator, backup, webmaster) are not in use.</td></tr>
+                <tr><td>100005</td><td>Verify that directory browsing is disabled in <code>.htaccess</code>.</td></tr>
+                <tr><td>100006</td><td>Verify that main WordPress directories (wp-admin, wp-includes, wp-content, etc.) are set to 755.</td></tr>
+                <tr><td>100007</td><td>Verify that no outdated plugins are present.</td></tr>
+                <tr><td>100008</td><td>Verify that no outdated themes are present.</td></tr>
+                <tr><td>100009</td><td>Verify that a security plugin is installed and active.</td></tr>
+                <tr><td>100010</td><td>Verify that the WordPress database table prefix has been changed from the default <code>wp_</code>.</td></tr>
+            </tbody>
+        </table>
+
+        <h3>8.3 Assessment Results</h3>
+        <p>
+            <strong>Assessment date:</strong> June 1, 2025, 04:29 | <strong>Score: 54%</strong> (6 passed, 5 failed)
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Check ID</th>
+                    <th>Description</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>100000</td><td>WordPress version is up to date</td><td class="tag-failed">FAILED</td></tr>
+                <tr><td>100001</td><td>.htaccess permissions set to 644</td><td class="tag-failed">FAILED</td></tr>
+                <tr><td>100002</td><td>WordPress debug mode disabled</td><td class="tag-passed">PASSED</td></tr>
+                <tr><td>100003</td><td>No backup/SQL/zip files in root</td><td class="tag-passed">PASSED</td></tr>
+                <tr><td>100004</td><td>No common admin account names in use</td><td class="tag-failed">FAILED</td></tr>
+                <tr><td>100005</td><td>Directory browsing disabled</td><td class="tag-failed">FAILED</td></tr>
+                <tr><td>100006</td><td>Main directory permissions set to 755</td><td class="tag-passed">PASSED</td></tr>
+                <tr><td>100007</td><td>No outdated plugins</td><td class="tag-passed">PASSED</td></tr>
+                <tr><td>100008</td><td>No outdated themes</td><td class="tag-passed">PASSED</td></tr>
+                <tr><td>100009</td><td>Security plugin installed and active</td><td class="tag-failed">FAILED</td></tr>
+                <tr><td>100010</td><td>Database table prefix changed from default</td><td class="tag-passed">PASSED</td></tr>
+            </tbody>
+        </table>
+
+        <h3>8.4 Deep Dive — Check 100004: Common Admin Account Names</h3>
+        <p>
+            This check detected that the WordPress installation was using one or more of the following
+            predictable administrative usernames: <code>admin</code>, <code>administrator</code>, <code>backup</code>,
+            or <code>webmaster</code>. These names are universally known and are the first credential combinations
+            tested by brute-force tools. Their presence substantially increases the probability of a successful
+            credential-stuffing or dictionary attack, particularly when combined with a weak or reused password.
+        </p>
+
+        
+        <img src="images/100004.png" alt="Rule 100004 — Common admin account name detection and remediation guidance" width="600">
+        <p class="image-caption"><strong>Figure 8.1:</strong> Rule 100004 — Common admin account name detection and remediation guidance</p>
+
+        <p>
+            The remediation is straightforward: rename all administrative accounts to non-predictable,
+            unique names. Combined with a strong password policy, this single change significantly reduces
+            the attack surface for credential-based attacks.
+        </p>
+
+        <h3>8.5 Deep Dive — Check 100009: No Security Plugin Installed</h3>
+        <p>
+            This check confirmed that no dedicated WordPress security plugin was installed and active on
+            the site. WordPress security plugins provide multiple defense layers including brute-force login
+            protection, malicious request filtering, file change monitoring, and two-factor authentication support.
+            Their absence leaves the WordPress application defenseless against a wide range of common exploits.
+        </p>
+        
+        <img src="images/100009.png" alt="Rule 100009 — Missing security plugin detection and installation guidance" width="600">
+        <p class="image-caption"><strong>Figure 8.2:</strong> Rule 100009 — Missing security plugin detection and installation guidance</p>
+
+        <h3>8.6 Case Study 3 — Conclusions</h3>
+        <p>
+            All eleven custom checks executed correctly and produced accurate results. The custom SCA policy
+            successfully identified five high-impact security issues: an outdated WordPress core version,
+            misconfigured <code>.htaccess</code> permissions, predictable admin account names, missing
+            directory browsing restrictions, and absence of a security plugin.
+        </p>
+        <p>
+            This case study demonstrates that Wazuh's SCA engine is not limited to OS-level hardening—it can be
+            extended to assess virtually any application layer when paired with appropriate custom rule sets.
+            The combination of automated scanning, precise failure identification, and actionable remediation
+            guidance makes this capability highly practical for production security operations.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">9. Wazuh Installation Overview</h2>
+        <!-- ============================================================ -->
+
+        <p>
+            The compact installation was performed on Ubuntu 22.04, co-locating all three central components
+            (indexer, server, dashboard) on a single host. Digital certificates were generated and distributed
+            at each stage to ensure all inter-component communication was authenticated and encrypted.
+        </p>
+
+        <h3>9.1 Indexer Installation</h3>
+        <p>
+            The indexer installation began by defining node names and IP addresses for all three components
+            in a shared configuration file:
+        </p>
+
+        
+        <img src="images/config.png" alt="Node topology defined in config.yml before certificate generation" width="500">
+        <p class="image-caption"><strong>Figure 9.1:</strong> Node topology defined in config.yml before certificate generation</p>
+
+        <p>
+            With this topology defined, digital certificates were generated for each component. The indexer
+            package was then installed and configured via <code>opensearch.yml</code>:
+        </p>
+
+        <img src="images/opensearch.png" alt="opensearch.yml configuring the indexer node and cluster membership" width="500">
+        <p class="image-caption"><strong>Figure 9.2:</strong> opensearch.yml configuring the indexer node and cluster membership</p>
+
+        <h3>9.2 Server and Filebeat Installation</h3>
+        <p>
+            The server package was installed and initiated without additional configuration. Filebeat—responsible
+            for forwarding processed alerts from the server to the indexer—was then installed and pointed at
+            the indexer's IP address and port 9200 (the standard OpenSearch/Elasticsearch API port):
+        </p>
+
+        <img src="images/filebeat.png" alt="Filebeat configuration connecting the server to the indexer over HTTPS" width="500">
+        <p class="image-caption"><strong>Figure 9.3:</strong> Filebeat configuration connecting the server to the indexer over HTTPS</p>
+
+        <h3>9.3 Dashboard Installation</h3>
+        <p>
+            The dashboard was installed and configured to accept connections on all interfaces (port 443)
+            and communicate with the indexer at port 9200:
+        </p>
+
+        <img src="images/opendash.png" alt="Dashboard configuration binding to all interfaces on HTTPS port 443" width="500">
+        <p class="image-caption"><strong>Figure 9.4:</strong> Dashboard configuration binding to all interfaces on HTTPS port 443</p>
+
+        <h3>9.4 Agent Enrollment</h3>
+        <p>
+            Agent enrollment is guided directly from the Wazuh dashboard. The wizard prompts the administrator
+            to select the target OS family and version, then provides the exact installation command with
+            pre-populated server address and agent name.
+        </p>
+
+        <img src="images/OS.png" alt="Wazuh dashboard OS selection step" width="600">
+        <p class="image-caption"><strong>Figure 9.5:</strong> OS selection step in the Wazuh agent enrollment wizard</p>
+
+        <img src="images/version.png" alt="Wazuh dashboard version selection step" width="600">
+        <p class="image-caption"><strong>Figure 9.6:</strong> Version and architecture selection for the CentOS agent</p>
+
+        <img src="images/ip.png" alt="Wazuh dashboard agent name assignment step" width="600">
+        <p class="image-caption"><strong>Figure 9.7:</strong> Server address and agent name assignment (named "Proxy" for the proxy server)</p>
+
+        <img src="images/install.png" alt="Wazuh dashboard auto-generated agent installation command" width="600">
+        <p class="image-caption"><strong>Figure 9.8:</strong> Auto-generated agent installation command for the Proxy host</p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">10. Tools and Technologies</h2>
+        <!-- ============================================================ -->
+
+        <ul class="features-list">
+            <li><strong>Wazuh 4.4.0</strong> – Open-source SIEM/XDR platform (indexer, server, dashboard, agents).</li>
+            <li><strong>OpenSearch</strong> – Distributed search and analytics engine powering the Wazuh Indexer.</li>
+            <li><strong>Filebeat</strong> – Lightweight log shipper forwarding alerts from server to indexer.</li>
+            <li><strong>MITRE ATT&CK Framework</strong> – Adversary tactics and techniques knowledge base integrated into Wazuh's detection engine.</li>
+            <li><strong>CIS Benchmarks</strong> – Security configuration guidelines used as the basis for SCA policy sets.</li>
+            <li><strong>Ubuntu 22.04</strong> – Host OS for the Wazuh central components.</li>
+            <li><strong>CentOS 8</strong> – Proxy server OS (Wazuh agent deployed).</li>
+            <li><strong>Debian 11 / Apache 2.4.54 / Moodle 4.0.2</strong> – Application server stack (Wazuh agent deployed).</li>
+            <li><strong>OpenSUSE 15.4 / MariaDB 10.6.10</strong> – Database server (Wazuh agent deployed).</li>
+        </ul>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">11. Conclusions</h2>
+        <!-- ============================================================ -->
+
+        <p>
+            This project demonstrated the full deployment and practical evaluation of the Wazuh SIEM platform
+            across a real production academic environment. Three case studies, each targeting a different
+            layer of the system stack, collectively validated Wazuh's capabilities and surfaced actionable
+            security intelligence.
+        </p>
+        <p>
+            The <strong>MITRE ATT&CK integration</strong> transformed raw HTTP access logs into structured,
+            tactically contextualized threat data. The analysis revealed that the system is under constant
+            automated probing—primarily targeting environment configuration files and known application endpoints.
+            Critically, the proxy's defensive configuration successfully blocked all recorded attack attempts,
+            with every event returning HTTP 404 or 405.
+        </p>
+        <p>
+            The <strong>SCA module</strong> identified concrete, exploitable misconfigurations across all three
+            operating systems: an unprotected <code>/tmp</code> partition on CentOS, missing account lockout
+            on Debian, and an SSH <code>MaxAuthTries</code> value exceeding the CIS recommendation on OpenSUSE.
+            For each finding, the platform provided clear, implementable remediation guidance. In the case of
+            the OpenSUSE SSH hardening check, the fix was applied and validated within the same assessment
+            cycle—demonstrating the tight feedback loop between detection and remediation that makes SCA
+            operationally valuable.
+        </p>
+        <p>
+            The <strong>custom SCA policy for WordPress</strong> extended this capability to the application layer,
+            identifying five significant security gaps including use of predictable admin account names and absence
+            of a security plugin. This demonstrates that Wazuh's SCA engine, while powerful out of the box,
+            is considerably more valuable when teams invest in writing domain-specific policy sets tailored
+            to their application stack.
+        </p>
+        <p>
+            Throughout the deployment, Wazuh demonstrated strong performance characteristics with minimal
+            resource consumption under the three-agent workload. As agent count scales, performance profiling
+            and horizontal server scaling (via the cluster daemon) should be considered.
+        </p>
+        <p>
+            Areas identified for future investigation include deeper exploration of Wazuh's <strong>active response</strong>
+            capabilities (automated blocking of attacking IPs), creation of custom correlation rules for
+            environment-specific attack patterns, and the design of SCA policy sets targeting the Moodle
+            application itself.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 class="section-title">References</h2>
+        <!-- ============================================================ -->
+
+        <p class="ref">
+            [1] Gabriel, R. et al. (2009). Analyzing Malware Log Data to Support Security Information and Event Management. <em>IEEE DBKDA 2009.</em> DOI: 10.1109/DBKDA.2009.26
+        </p>
+        <p class="ref">
+            [2] Podzins, O. &amp; Romanovs, A. (2019). Why SIEM is Irreplaceable in a Secure IT Environment? <em>IEEE eStream 2019.</em> DOI: 10.1109/eStream.2019.8732173
+        </p>
+        <p class="ref">
+            [3] IBM. Security Information and Event Management (SIEM). <a href="https://www.ibm.com/topics/siem" target="_blank">ibm.com/topics/siem</a>
+        </p>
+        <p class="ref">
+            [4] González-Granadillo, G. et al. (2021). SIEM: Analysis, Trends, and Usage in Critical Infrastructures. <em>Sensors.</em> DOI: 10.3390/s21144759
+        </p>
+        <p class="ref">
+            [5] Cinque, M. et al. (2018). Challenges and Directions in SIEM. <em>IEEE ISSREW 2018.</em> DOI: 10.1109/ISSREW.2018.00-24
+        </p>
+        <p class="ref">
+            [6] Stankovic, S. et al. (2022). A Review of Wazuh Tool Capabilities for Detecting Attacks Based on Log Analysis. <em>IcETRAN 2022.</em>
+            <a href="https://www.researchgate.net/publication/364172770" target="_blank">ResearchGate</a>
+        </p>
+        <p class="ref">
+            [7] MITRE ATT&CK Enterprise Tactics. <a href="https://attack.mitre.org/tactics/enterprise/" target="_blank">attack.mitre.org</a>
+        </p>
+        <p class="ref">
+            [8] Wazuh Platform Documentation. <a href="https://documentation.wazuh.com" target="_blank">documentation.wazuh.com</a>
+        </p>
+        <p class="ref">
+            [9] CIS Benchmarks. <a href="https://www.cisecurity.org/cis-benchmarks" target="_blank">cisecurity.org/cis-benchmarks</a>
+        </p>
+        <p class="ref">
+            [10] Wazuh WordPress Security Assessment Guide. <a href="https://wazuh.com/blog/how-to-perform-wordpress-security-assessment-with-wazuh/" target="_blank">wazuh.com/blog</a>
+        </p>
+
+    </div>
+</section>
+
+<footer>
+    <p>Marco Abreu &copy; 2026</p>
+</footer>
+
+</body>
+</html>
