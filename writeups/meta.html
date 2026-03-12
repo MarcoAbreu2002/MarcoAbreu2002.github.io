@@ -5,9 +5,8 @@
     <title>AI & Metamorphic Malware Evolution | Cybersecurity Insights</title>
     <link rel="stylesheet" href="../style.css">
     <style>
-        /* Extra styling for project page */
         :root {
-            --accent-color: #64ffda; /* Defining accent color */
+            --accent-color: #64ffda;
         }
         
         body {
@@ -122,6 +121,97 @@
             color: #8892b0;
             margin-top: 5px;
         }
+
+        /* Results table styling */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 30px 0;
+            font-size: 0.88rem;
+        }
+        .results-table th {
+            background: #112240;
+            color: var(--accent-color);
+            padding: 10px 14px;
+            text-align: left;
+            border: 1px solid #233554;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+        .results-table td {
+            padding: 9px 14px;
+            border: 1px solid #1d2f4a;
+            color: #a8b2d8;
+            vertical-align: middle;
+        }
+        .results-table tr:nth-child(even) td {
+            background: #0d1f38;
+        }
+        .results-table tr:nth-child(odd) td {
+            background: #0a1929;
+        }
+        .results-table .highlight {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        .results-table .dim {
+            color: #637080;
+        }
+
+        /* Stat badges */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .stat-card {
+            background: #112240;
+            border: 1px solid #233554;
+            border-radius: 6px;
+            padding: 18px 20px;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-label {
+            font-size: 0.78rem;
+            color: #8892b0;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* Callout box */
+        .callout {
+            background: #112240;
+            border-left: 3px solid var(--accent-color);
+            padding: 14px 20px;
+            border-radius: 0 6px 6px 0;
+            margin: 20px 0;
+        }
+        .callout p {
+            margin: 0;
+            font-size: 0.92rem;
+            color: #a8b2d8;
+        }
+
+        /* Tag badges */
+        .tag {
+            display: inline-block;
+            background: rgba(100,255,218,0.08);
+            color: var(--accent-color);
+            border: 1px solid rgba(100,255,218,0.25);
+            border-radius: 3px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin: 2px 3px 2px 0;
+            font-family: 'Courier New', monospace;
+        }
         
         footer {
             text-align: center;
@@ -136,9 +226,8 @@
 
 <nav class="navbar">
     <a href="../index.html">
-    <div class="logo">&lt;Marco Abreu /&gt;</div>
-</a>
-
+        <div class="logo">&lt;Marco Abreu /&gt;</div>
+    </a>
     <ul class="nav-links">
         <li><a href="../index.html#writeups">← Back to Articles</a></li>
     </ul>
@@ -148,7 +237,7 @@
     <div class="container">
         <h1>The Shape-Shifting Threat</h1>
         <p class="subtitle">
-            An in-depth analysis of Metamorphic Malware, Attack Vectors, and the role of Artificial Intelligence in modern evasion techniques.
+            An in-depth analysis of Metamorphic Malware, Attack Vectors, and the role of Artificial Intelligence in modern evasion techniques — including empirical results from original research.
         </p>
         <a href="#tutorial" class="btn">Read Article</a>
     </div>
@@ -166,52 +255,43 @@
 </p>
 
 <p>
-    Early malicious software relied on static code and repetitive distribution, making it relatively easy to identify using hashes and known byte signatures.
-    However, as detection mechanisms improved, attackers were forced to innovate.
-    This evolution led to increasingly evasive malware families capable of altering their structure, execution flow,
-    and runtime behavior in order to avoid identification and analysis.
+    According to ENISA reports, there has been a marked increase in the sophistication and volume of malware attacks, driven by obfuscation and automation techniques that make threats increasingly difficult to detect through signature-based antivirus mechanisms. The gap between threat evolution and the capacity of existing defensive solutions continues to widen.
 </p>
 
 <p>
-    Today’s threat landscape is dominated by malware engineered for stealth, persistence, and adaptability.
-    These threats actively resist reverse engineering, delay execution to evade sandboxes,
-    and dynamically modify their internal structure to defeat static and heuristic detection techniques.
-    Among these, polymorphic and metamorphic malware represent some of the most advanced and dangerous classes.
+    The economic and social impact is staggering. UN statistics from 2022 recorded approximately 5.4 billion malware attacks globally, with over 90% propagated through email phishing campaigns. More than 40% of these incidents resulted in the exfiltration or theft of sensitive data. According to the Allianz Risk Barometer, 57% of organizations identified ransomware as the most critical cyber threat to business continuity.
 </p>
 
 <p>
-    From a defensive standpoint, these techniques directly challenge many traditional security assumptions.
-    Static indicators of compromise (IOCs), file hashes, and known signatures are increasingly unreliable,
-    shifting the focus toward behavioral analysis, memory inspection, and intent-based detection models.
-    Understanding the taxonomy and evolution of malware is therefore essential for building effective, modern defenses.
+    Today's threat landscape is further complicated by the rise of the <strong>Malware-as-a-Service (MaaS)</strong> model, where operators offer ready-to-use malware tools for payment — lowering the technical barrier for would-be attackers with little expertise.
+    Among the most advanced threats, polymorphic and metamorphic malware represent some of the most dangerous classes, challenging both static and heuristic detection at their core.
 </p>
 
 <h4>Defining Malware</h4>
 <p>
     Malware (malicious software) refers to any software intentionally designed to disrupt operations,
-    gain unauthorized access, exfiltrate data, or compromise the confidentiality, integrity, or availability of systems.
+    gain unauthorized access, exfiltrate data, or compromise the confidentiality, integrity, or availability (CIA) of systems.
     Malware manifests in many forms, each aligned with specific tactics, techniques, and procedures (TTPs)
     as categorized by frameworks such as <strong>MITRE ATT&CK</strong>.
 </p>
 
 <p>
-    The following categories represent the most common malware types encountered in real-world attacks,
-    often used in combination across multiple stages of an intrusion lifecycle:
+    Notably, research by Brezinski and Ferens (2023) found that approximately <strong>93.6% of modern malware</strong> incorporates some form of adaptive mutation — such as polymorphism or metamorphism — making it increasingly difficult to detect with traditional antivirus tools.
 </p>
 
 <ul class="features-list">
     <li><strong>Viruses:</strong> Malicious code that attaches itself to legitimate executables and propagates when the host file is run, typically relying on user interaction.</li>
     <li><strong>Worms:</strong> Self-propagating malware capable of spreading autonomously across networks by exploiting vulnerabilities, often aligned with lateral movement techniques.</li>
-    <li><strong>Trojans:</strong> Malicious programs disguised as legitimate software, commonly used for initial access and payload delivery.</li>
-    <li><strong>Ransomware:</strong> Malware that encrypts data or systems to deny availability, demanding payment for recovery; frequently associated with double-extortion tactics.</li>
+    <li><strong>Trojans:</strong> Malicious programs disguised as legitimate software, commonly used for initial access and payload delivery. Notable examples include banking trojans like Emotet, which saw a 970%+ increase in detections in the first half of 2022.</li>
+    <li><strong>Ransomware:</strong> Malware that encrypts data or systems to deny availability, demanding payment for recovery; frequently associated with double-extortion tactics. Represents approximately 17% of global attacks.</li>
     <li><strong>Spyware:</strong> Software designed to covertly monitor user activity and collect sensitive information such as credentials, communications, or browsing behavior.</li>
     <li><strong>Adware:</strong> Programs that deliver unwanted advertisements, often bundled with other malware and used as a monetization vector.</li>
     <li><strong>Keyloggers:</strong> Tools that capture keystrokes to steal credentials and sensitive input, commonly deployed post-compromise.</li>
     <li><strong>Rootkits:</strong> Deeply embedded malware designed to maintain privileged access while actively concealing its presence from the operating system and security tools.</li>
     <li><strong>Backdoors:</strong> Mechanisms that provide persistent unauthorized access, bypassing normal authentication and security controls.</li>
-    <li><strong>Botnets:</strong> Collections of compromised systems remotely controlled by an attacker, often used for large-scale operations such as DDoS attacks or spam campaigns.</li>
+    <li><strong>Botnets:</strong> Collections of compromised systems remotely controlled by an attacker, often used for large-scale operations such as DDoS attacks or spam campaigns. Linux systems, cloud environments, and IoT devices are increasingly targeted.</li>
     <li><strong>Polymorphic Malware:</strong> Malware that alters its encrypted payload and decryption routines with each instance, complicating signature-based detection while retaining the same core logic.</li>
-    <li><strong>Metamorphic Malware:</strong> Advanced malware that completely rewrites its own code on each execution, preserving functionality while radically altering structure, making even heuristic detection difficult.</li>
+    <li><strong>Metamorphic Malware:</strong> Advanced malware that completely rewrites its own code on each execution, preserving functionality while radically altering structure, defeating even heuristic detection.</li>
 </ul>
 
 <p>
@@ -220,8 +300,6 @@
     Metamorphic malware, in particular, is closely associated with advanced defense evasion techniques,
     representing a significant challenge for both automated and human-driven analysis.
 </p>
-
-
 
 
 <h3>2. Common Attack Vectors</h3>
@@ -233,21 +311,14 @@
     an attack before persistence or lateral movement is established.
 </p>
 
-<p>
-    Modern attackers favor vectors that exploit human trust, unpatched systems, or complex supply chains,
-    allowing malware—particularly polymorphic and metamorphic variants—to enter environments unnoticed.
-    Once inside, these threats often deploy additional techniques to evade defenses and escalate privileges.
-</p>
-
 <ul class="features-list">
     <li>
         <strong>Social Engineering (Phishing and Spear Phishing):</strong>
-        The most prevalent initial access vector. Attackers craft deceptive emails, messages, or websites to trick users
-        into executing malicious attachments, clicking weaponized links, or disclosing credentials.
-        Phishing campaigns target large audiences, while spear phishing is highly targeted and tailored to specific individuals
-        or organizations. Within MITRE ATT&CK, this aligns with <em>T1566 – Phishing</em>.
-        Human error remains a critical weakness, making this vector especially effective for delivering stealthy loaders
-        and metamorphic payloads.
+        The most prevalent initial access vector, accounting for over 90% of malware attacks in 2022 according to UN statistics.
+        Attackers craft deceptive emails, messages, or websites to trick users into executing malicious attachments,
+        clicking weaponized links, or disclosing credentials. Phishing targets large audiences broadly, while spear phishing
+        is highly targeted and tailored to specific individuals or organizations.
+        Within MITRE ATT&CK, this aligns with <em>T1566 – Phishing</em>.
     </li>
 
     <li>
@@ -255,7 +326,7 @@
         Malware often exploits security flaws in operating systems, applications, browsers, or network services.
         These vulnerabilities may be <em>zero-day</em> (unknown to vendors) or publicly disclosed but unpatched.
         Exploitation can occur via malicious websites (drive-by downloads), crafted documents, or network-based attacks.
-        This vector corresponds to techniques such as <em>T1190 – Exploit Public-Facing Application</em>
+        This vector corresponds to <em>T1190 – Exploit Public-Facing Application</em>
         and <em>T1203 – Exploitation for Client Execution</em>.
     </li>
 
@@ -272,34 +343,30 @@
         <strong>Network Propagation and Network Services:</strong>
         Malware can spread laterally by exploiting weak credentials, unsecured file shares, or vulnerable network services.
         Worms exemplify this vector, autonomously scanning for and infecting additional hosts.
-        Within MITRE ATT&CK, this behavior relates to <em>Lateral Movement</em> techniques such as
-        <em>T1021 – Remote Services</em> and <em>T1210 – Exploitation of Remote Services</em>.
+        Early examples like Code Red and Nimda demonstrated the potential for large-scale infections.
+        Within MITRE ATT&CK, this behavior relates to <em>T1021 – Remote Services</em> and <em>T1210 – Exploitation of Remote Services</em>.
     </li>
 
     <li>
         <strong>Malvertising and Malicious Downloads:</strong>
         Attackers leverage compromised or malicious online advertisements to redirect users to exploit kits
-        or malware-hosting websites.
-        These campaigns often require no explicit user action beyond visiting a legitimate site,
-        making them difficult to detect.
-        This vector is commonly associated with <em>drive-by compromise</em> techniques.
+        or malware-hosting websites. These campaigns often require no explicit user action beyond visiting a legitimate site.
     </li>
 
     <li>
         <strong>Supply Chain Attacks:</strong>
-        One of the most dangerous and impactful vectors, supply chain attacks involve inserting malicious code
+        One of the most dangerous vectors, supply chain attacks involve inserting malicious code
         into trusted software, updates, libraries, or hardware during development or distribution.
         Because the compromised component originates from a trusted vendor,
-        malware delivered through this vector often bypasses security controls.
-        This aligns with <em>T1195 – Supply Chain Compromise</em> and has been used in several high-profile incidents.
+        malware delivered through this vector often bypasses security controls entirely.
+        This aligns with <em>T1195 – Supply Chain Compromise</em>.
     </li>
 
     <li>
         <strong>Cloud and IoT Environments:</strong>
         As organizations increasingly rely on cloud infrastructure and Internet of Things (IoT) devices,
         attackers exploit misconfigurations, weak authentication, and unpatched firmware.
-        Compromised cloud accounts can be used for data exfiltration or further malware deployment,
-        while infected IoT devices are often recruited into botnets.
+        These environments have become attractive targets due to their widespread adoption and often insufficient default protections.
         These attacks map to techniques such as <em>T1078 – Valid Accounts</em> and cloud-specific ATT&CK matrices.
     </li>
 </ul>
@@ -323,42 +390,33 @@
     the dominant detection techniques of its time.
 </p>
 
+<h4>First Generation: Oligomorphic Malware</h4>
 <p>
-    Early antivirus engines relied heavily on static byte patterns to identify known threats.
-    Once these signatures became widespread, attackers were forced to develop methods that could
-    produce large numbers of unique malware instances from a single codebase.
-    Two major evolutionary milestones emerged from this pressure: polymorphic malware and metamorphic malware.
+    Before polymorphism, <strong>oligomorphic malware</strong> emerged as a response to fixed-signature detection. These threats maintained multiple variants of their decryption module while keeping the main body unchanged. By cycling through a limited set of decoders, they could avoid direct identification. However, their finite number of combinations made them manageable for updated antivirus engines.
 </p>
 
-<h4>Polymorphic Malware</h4>
+<h4>Second Generation: Polymorphic Malware</h4>
 <p>
-    Polymorphic malware represents the first major step toward automated evasion.
+    Polymorphic malware represented the first major leap toward automated evasion.
     Rather than exposing a consistent byte pattern, polymorphic threats encrypt their malicious payload
     and vary both the encryption key and the accompanying decryption routine with each infection.
     As a result, no two samples appear identical at the binary level.
 </p>
-
 <p>
-    While this approach is highly effective against static signature-based detection,
-    the core malicious logic remains unchanged beneath the encryption layer.
-    To execute, the malware must decrypt itself in memory, revealing a stable runtime structure.
-    This characteristic allows advanced defenses—such as emulation, sandboxing, and memory analysis—
-    to identify polymorphic malware based on behavior rather than appearance.
+    These mechanisms can generate thousands to millions of different variants through techniques such as subroutine permutation, junk code insertion, equivalent instruction substitution, and control flow alterations. A well-known early example is the <strong>1260 virus</strong> (1990). While highly effective against static signatures, the core malicious logic remains unchanged beneath the encryption layer, making it detectable through emulation, sandboxing, and memory analysis.
 </p>
 
-<h4>Metamorphic Malware: The True Shape-Shifter</h4>
+<h4>Third Generation: Metamorphic Malware — The True Shape-Shifter</h4>
 <p>
     Metamorphic malware advances evasion beyond encryption entirely.
     Instead of hiding its payload, it <strong>transforms it</strong>.
-    With each execution or propagation cycle, the malware rewrites its own code,
-    generating a new version that is functionally identical but structurally distinct.
+    With each execution or propagation cycle, the malware rewrites its own code entirely,
+    generating a new version that is functionally identical but structurally distinct — <em>without any encryption layer</em>.
 </p>
 
 <p>
-    These transformations can include instruction substitution, code reordering,
-    register reassignment, dead code insertion, and control flow modification.
-    Because the underlying logic itself is altered, metamorphic malware produces no stable signature,
-    no consistent decryptor, and no fixed execution pattern.
+    Notable historical examples include <strong>Win95/Regswap</strong> (1998) and <strong>W32/NGVCK</strong> (2001), the latter generated by automated tools capable of producing millions of distinct variants.
+    The most sophisticated example remains <strong>W32/Simile (MetaPHOR)</strong>, in which over 90% of the code was dedicated to the metamorphic engine itself — the author described the continuous expansion and contraction of its code as the "Accordion Model."
 </p>
 
 <p class="ref">
@@ -371,25 +429,16 @@
     Within the MITRE ATT&CK framework, metamorphic techniques are strongly associated with
     <em>Defense Evasion</em>, particularly methods designed to obstruct analysis,
     bypass security controls, and frustrate reverse engineering.
-    These capabilities make metamorphic malware especially effective in long-term,
-    stealth-focused operations where persistence and survivability are prioritized over rapid impact.
 </p>
 
 
-  <h3>4. How Metamorphic Engines Work</h3>
+<h3>4. How Metamorphic Engines Work</h3>
 <p>
     At the core of every metamorphic malware strain lies a specialized component known as a
-    <strong>Mutation Engine</strong>. This engine is responsible for transforming the malware’s code
+    <strong>Mutation Engine</strong>. This engine is responsible for transforming the malware's code
     while preserving its original functionality. Unlike simple obfuscators, a metamorphic engine
-    operates on the program’s logic itself, producing structurally unique variants that resist
+    operates on the program's logic itself, producing structurally unique variants that resist
     static analysis, signature generation, and heuristic detection.
-</p>
-
-<p>
-    From an architectural perspective, the mutation engine functions as an automated
-    reverse-engineering and recompilation pipeline. Each execution or propagation cycle
-    generates a newly mutated instance, ensuring that no stable binary representation exists
-    across infections.
 </p>
 
 <img src="images/placeholder_engine.png" alt="Diagram of Disassembler, Shrinker, Permutator, and Assembler workflow">
@@ -399,33 +448,38 @@
     <li>
         <strong>Disassembler:</strong>
         Converts compiled machine code into an intermediate assembly or representation (IR),
-        allowing the engine to analyze instruction boundaries, control flow, and dependencies.
-        This step is essential for enabling safe and semantically equivalent transformations.
+        allowing the engine to analyze instruction boundaries, control flow, and dependencies — including register usage, subroutines, and variables that will be used in later transformation phases.
     </li>
     <li>
         <strong>Shrinker:</strong>
         Removes redundant instructions, obsolete dead code, and artifacts from previous mutation cycles.
-        Without this phase, repeated transformations would cause uncontrolled code growth,
-        increasing the likelihood of detection due to anomalous file size or structure.
+        This cleaning phase is not limited to junk code removal — it also reverses redundant substitutions and reduces complex code blocks back to semantically equivalent primitive instructions,
+        ensuring the code remains functional and preventing uncontrolled binary growth across successive generations.
     </li>
     <li>
         <strong>Permutator / Expander:</strong>
-        Applies a wide range of structural mutations and obfuscation techniques.
-        This stage introduces variability by rearranging logic, inserting deceptive constructs,
-        and altering execution flow while maintaining functional equivalence.
+        The core obfuscation phase. The <em>permutator</em> randomly rearranges subroutines and code blocks,
+        inserting jump instructions to redirect execution flow, creating a highly non-linear structure.
+        The <em>expander</em> applies instruction substitutions, alters registers and variables using probabilistic substitution tables,
+        and inserts junk code such as redundant instructions and inline/outline functions.
+        Techniques like these are what allowed W32/Etap and W32/Zmist to produce unique variants at scale.
     </li>
     <li>
         <strong>Assembler:</strong>
-        Recompiles the transformed code into a fully functional executable.
-        The output is a new binary with different byte patterns, instruction ordering,
-        and structural characteristics, yet identical malicious behavior.
+        Recompiles the transformed intermediate representation back into a fully functional executable,
+        including control flow restructuring to ensure that, despite all surface-level changes,
+        the malware's global behavior remains unaltered.
     </li>
 </ul>
+
+<p>
+    Some advanced metamorphic engines operate entirely on an <strong>Intermediate Representation (IR)</strong> rather than raw assembly or source code. Techniques using deterministic automata — where formal grammar-based transitions produce multiple possible variants — further expand the mutation space using linguistically-structured templates. Many modern mutation engines in research contexts, such as <strong>PS-MPC</strong>, <strong>NGVCK</strong>, <strong>G2</strong>, and <strong>MWOR</strong>, are widely used both by malware authors and by security researchers to test the effectiveness of antivirus solutions.
+</p>
 
 <h4>Obfuscation Techniques</h4>
 <p>
     To successfully evade detection, metamorphic engines rely on a diverse set of obfuscation
-    and transformation techniques. These methods are designed to alter a program’s structure,
+    and transformation techniques. These methods are designed to alter a program's structure,
     syntax, and control flow without changing its observable behavior at runtime.
     Many of these techniques directly support <em>Defense Evasion</em> objectives as defined
     in the MITRE ATT&CK framework.
@@ -434,62 +488,52 @@
 <ul class="features-list">
     <li>
         <strong>Dead Code Insertion:</strong>
-        Introduces instructions that have no effect on execution, such as NOPs, redundant arithmetic,
-        unused variables, or unreachable branches. These additions change the binary’s appearance,
-        inflate code diversity, and interfere with signature-based detection.
+        Introduces instructions that have no effect on execution, such as <code>nop</code>, redundant arithmetic operations (<code>x = x + 0</code>), unused variable assignments, self-referential jumps (<code>jmp $</code>), code after <code>return</code> statements, and conditional blocks that never execute (<code>if (false) {}</code>).
+        These additions change the binary's appearance, inflate code diversity, and interfere with signature-based detection by altering the file's size and byte patterns.
     </li>
     <li>
         <strong>Register Reassignment:</strong>
-        Systematically swaps CPU registers used to store intermediate values (e.g., EAX, EBX, EDX)
-        across generations. Although semantically irrelevant, this variation disrupts instruction-level
-        pattern matching.
+        Systematically swaps CPU registers used to store intermediate values (e.g., swapping EAX, EBX, and EDX across generations).
+        Although semantically irrelevant, this variation disrupts instruction-level pattern matching. The virus <strong>W32/Ghost</strong> used this technique in conjunction with subroutine reordering.
     </li>
     <li>
         <strong>Subroutine Reordering:</strong>
         Randomizes the physical placement of functions and procedures within the binary.
         Because execution order is resolved at runtime via calls and jumps,
         logical behavior remains unchanged while structural layout varies dramatically.
+        A binary with just 10 subroutines can generate 10! = 3,628,800 distinct variants this way.
     </li>
     <li>
         <strong>Code Reordering:</strong>
         Rearranges instruction blocks and basic blocks, inserting conditional or unconditional jumps
-        to preserve correct execution flow. This technique is particularly effective at defeating
-        static disassembly and linear code analysis.
+        to preserve correct execution flow. Two approaches exist: random shuffling (simple and detectable) versus reordering only dependency-independent instructions (more sophisticated, requires deep dependency analysis, harder to reverse). Observed in variants like W95/Zperm.
     </li>
     <li>
         <strong>Instruction Substitution:</strong>
         Replaces instructions with semantically equivalent alternatives
         (e.g., <code>XOR A, A</code> → <code>SUB A, A</code>,
         or <code>ADD A, 2</code> → <code>INC A; INC A</code>),
-        altering opcode sequences while preserving results.
-    </li>
-    <li>
-        <strong>Code Transposition:</strong>
-        Rearranges instruction sequences while maintaining behavior,
-        either through random shuffling combined with jumps
-        or by reordering only dependency-independent instructions.
-        The latter requires sophisticated dependency analysis and is harder to detect.
+        altering opcode sequences while preserving results. Used extensively by viruses like Evol, MetaPHOR, Zperm, and Avron.
     </li>
     <li>
         <strong>Code Integration:</strong>
-        Embeds malicious logic directly into the host program by decompiling it,
-        inserting malicious routines into legitimate code paths,
-        and recompiling the result. This produces deeply integrated malware
-        that blurs the line between benign and malicious functionality.
+        Embeds malicious logic directly into the host program by decompiling it into manipulable objects,
+        inserting malicious routines between those objects, and recompiling the result.
+        This technique — used by <strong>Win95/Zmist</strong> — creates a deeply integrated malware sample that blurs the boundary between benign and malicious code, making both automated and manual analysis extremely difficult.
     </li>
     <li>
         <strong>Identifier Renaming:</strong>
         Changes variable, function, and class names to meaningless identifiers
         (e.g., <code>calcularTotal()</code> → <code>a1b2c3()</code>),
-        significantly reducing readability and complicating reverse engineering,
-        especially in interpreted or semi-compiled languages.
+        significantly reducing readability and complicating reverse engineering.
+        Most effective in interpreted or semi-compiled languages like JavaScript or Python; has reduced impact in compiled languages.
     </li>
     <li>
         <strong>Control Flow Obfuscation:</strong>
         Alters execution flow by introducing opaque predicates, excessive branching,
         unreachable paths, or rewritten control structures.
         This technique degrades the effectiveness of control-flow graphs (CFGs)
-        and automated decompilation tools.
+        and automated decompilation tools. Encryption and compression may be applied as additional layers, hiding the malware's internal logic during analysis.
     </li>
 </ul>
 
@@ -499,6 +543,44 @@
     For defenders, this eliminates reliable static indicators and necessitates detection strategies
     focused on runtime behavior, memory analysis, and intent-based modeling rather than code appearance.
 </p>
+
+
+<h3>5. Detection Systems and Their Limitations</h3>
+<p>
+    Traditional detection mechanisms have evolved considerably, but each generation faces fundamental limitations when confronted with metamorphic threats.
+</p>
+
+<h4>Signature-Based Detection</h4>
+<p>
+    The oldest and most widely deployed method — comparing suspicious files against a database of known byte patterns extracted from confirmed malware samples. It is particularly effective at detecting previously identified threats with low false-positive rates. However, since metamorphic engines alter the syntactic structure of code at every infection, no static signature can cover all variants. The code generated never matches any existing signature, allowing it to escape detection entirely. Malware authors further complicate signature extraction through obfuscation and encryption layers.
+</p>
+
+<h4>Heuristic and Behavioral Analysis</h4>
+<p>
+    To overcome the limitations of pure signature detection, heuristic systems look for behavioral patterns indicative of malicious activity — such as unauthorized filesystem access, suspicious API calls, or spawning of unexpected processes. Dynamic analysis extends this by executing suspicious code in an isolated sandbox environment to observe its behavior at runtime. However, advanced metamorphic malware has evolved specific countermeasures:
+</p>
+<ul class="features-list">
+    <li><strong>Conditional execution:</strong> the malware only activates outside virtual or controlled environments.</li>
+    <li><strong>Dormant execution:</strong> introduces delays or harmless actions in initial stages, remaining "hidden" until monitoring ends.</li>
+    <li><strong>Environment fingerprinting:</strong> actively detects sandbox indicators (VM artifacts, debuggers, analysis tools) and alters behavior accordingly.</li>
+</ul>
+
+<h4>Machine Learning and AI-Based Detection</h4>
+<p>
+    Modern solutions integrate ML and deep learning algorithms to detect malware based on anomalous patterns in large data volumes. Effective techniques include extraction of features from opcodes, API call sequences, and control-flow graphs (CFGs), as well as n-gram analysis of opcode sequences. NLP approaches — applying models like Word2Vec, LSTM, and BERT to API call sequences — capture semantic context that traditional pattern matching cannot.
+</p>
+<p>Despite their potential, these approaches also face critical limitations:</p>
+<ul class="features-list">
+    <li><strong>Dataset quality:</strong> Many available datasets are outdated or lack realistic metamorphic variants, inducing overfitting to fixed patterns and reducing effectiveness against adaptive mutations.</li>
+    <li><strong>Adversarial vulnerability:</strong> Small modifications — precisely the kind introduced by metamorphic variants — can be sufficient to fool classifiers, compromising detection efficacy.</li>
+    <li><strong>Computational cost:</strong> The intensive processing required makes adoption difficult on resource-constrained devices.</li>
+</ul>
+
+<div class="callout">
+    <p>
+        <strong>Key finding:</strong> The FUMVar-Ex framework demonstrated that applying basic obfuscation and metamorphism techniques could reduce commercial antivirus detection rates by up to <strong>86%</strong>. Research by Madani (2023) showed that approximately 72% of LLM-generated malware variants completely evaded advanced heuristic systems. Ghanem et al. achieved evasion rates of 98% against MalConv using memetic algorithms.
+    </p>
+</div>
 
 
 <h2 class="section-title">The Role of Artificial Intelligence</h2>
@@ -528,35 +610,30 @@
 </p>
 
 <p>
-    When prompted correctly, an LLM can take an existing codebase—malicious or otherwise—and
+    When prompted correctly, an LLM can take an existing codebase — malicious or otherwise — and
     rewrite it in a structurally distinct form while preserving functionality.
     Unlike classic metamorphic engines, which rely on predefined transformation rules,
     AI-driven mutation is <em>probabilistic</em>, <em>semantic-aware</em>, and highly flexible.
+    Notably, frameworks like <strong>MalGEN</strong> (Saha &amp; Shukla, 2025) demonstrated that many AI-generated samples went undetected by both commercial AV engines and behavioral solutions, evidencing the potential of AI to create sophisticated malware in a semi-automated fashion.
 </p>
 
 <p>
-    This enables a new generation of malware capable of generating functionally equivalent variants
-    without relying on disassemblers, shrinkers, or handcrafted obfuscation logic.
-    From a MITRE ATT&CK perspective, this significantly enhances <em>Defense Evasion</em>
-    and <em>Obfuscated/Encrypted Payload</em> techniques by automating diversity at scale.
+    Real-world cases reinforce these trends. Symantec documented phishing campaigns where malicious HTML and PowerShell scripts were generated with LLM assistance to distribute malware such as LokiBot and NetSupport RAT. Palo Alto Networks (Unit42) demonstrated that LLMs can rewrite and obfuscate malicious JavaScript — applying variable renaming, dead code insertion, and whitespace removal — resulting in significant reductions in VirusTotal detection rates.
 </p>
 
 <img src="images/placeholder_ai_flow.png" alt="Flowchart showing prompt input, LLM processing, and mutated code output">
-<p class="image-caption"><strong>Figure 5.1:</strong> Adaptive metamorphic malware generation using LLMs</p>
+<p class="image-caption"><strong>Figure 5.1:</strong> Adaptive metamorphic malware generation using LLMs — the LLM acts as the mutation engine, taking a base code artifact and applying syntactic and semantic mutations, with local compilation and validation.</p>
 
 <p>
     The result is a new paradigm known as <strong>Adaptive Metamorphic Malware</strong>.
-    In this model, the mutation process is no longer static or preconfigured.
-    Instead, it becomes <em>context-aware</em>.
-    An attacker can supply environmental details—such as operating system version,
-    active security products, sandbox indicators, or architectural constraints—and
-    the AI generates a tailored variant optimized for that specific target.
+    In this model, the mutation process is no longer static or preconfigured — it becomes <em>context-aware</em>.
+    An attacker can supply environmental details — such as operating system version, active security products, sandbox indicators, or architectural constraints — and the AI generates a tailored variant optimized for that specific target.
+    This adaptability allows malware to evolve not just between infections, but potentially in response to failed execution, partial detection, or environmental changes.
 </p>
 
 <p>
-    This adaptability allows malware to evolve not just between infections,
-    but potentially in response to failed execution, partial detection,
-    or environmental changes, blurring the line between malware generation and autonomous decision-making.
+    Tools such as <strong>WormGPT</strong> and <strong>FraudGPT</strong> — modified LLMs without safety restrictions — have been observed in cybercrime-as-a-service forums being used to create scripts, phishing campaigns, and malicious code with few or no content filters.
+    These applications confirm that while fully autonomous malware generation still requires technical support, the capabilities for obfuscation and automated variant creation are already sufficiently mature for practical use by malicious actors.
 </p>
 
 <h3>Cloud vs. Local LLMs</h3>
@@ -571,31 +648,289 @@
         <strong>Cloud Models (e.g., GPT-4, Grok):</strong>
         Hosted on large-scale infrastructure, these models offer superior reasoning,
         broader contextual understanding, and higher-quality code transformations.
+        They generate mutations in under 1 minute with near-zero local resource impact.
         However, they are subject to safety guardrails, request monitoring,
         and usage logging, which may limit or block overtly malicious prompts
-        and introduce operational risk for attackers.
+        and introduce operational risk for attackers — as evidenced by GPT-4's safety mechanisms partially constraining its mutation strategies.
     </li>
     <li>
         <strong>Local Models (e.g., Mistral, Qwen):</strong>
         Open-source LLMs deployed on local hardware provide full control,
         privacy, and offline operation.
-        While they may lack some of the advanced reasoning capabilities of cloud models,
-        they operate without content filters or external oversight,
-        making them well-suited for autonomous, large-scale malware mutation pipelines.
+        They require more resources (60–80% RAM, 50–60% CPU utilization, 2–4 minutes per mutation on a personal laptop)
+        but operate without content filters or external oversight,
+        making them well-suited for autonomous, large-scale, and privacy-sensitive mutation pipelines.
     </li>
 </ul>
 
+
+<h2 class="section-title">Empirical Research: LLM-Based Framework Results</h2>
+
 <p>
-    From a defensive standpoint, the emergence of AI-driven metamorphic malware
-    represents a fundamental escalation.
-    Detection strategies based on static signatures or fixed heuristics become increasingly ineffective,
-    reinforcing the need for behavioral analysis, memory inspection,
-    and intent-focused detection mechanisms capable of identifying malicious activity
-    regardless of how the underlying code is written.
+    The following section presents results from original research: the development and evaluation of a scalable, AI-based framework for adaptive metamorphic malware generation. The framework integrated both local and cloud-based LLMs to generate functional variants of a C reverse shell, applying mutations explicitly targeting Windows 11 with Microsoft Defender. All experiments were conducted in a fully isolated environment for strictly academic purposes.
 </p>
 
+<div class="stat-grid">
+    <div class="stat-card">
+        <span class="stat-value">80</span>
+        <span class="stat-label">Functional variants generated</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">4</span>
+        <span class="stat-label">LLMs evaluated</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">72</span>
+        <span class="stat-label">AV engines via VirusTotal</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-value">32</span>
+        <span class="stat-label">Base code detections (unmodified)</span>
+    </div>
+</div>
 
-   <h2 class="section-title">Conclusion</h2>
+<h3>6. Framework Architecture and Methodology</h3>
+<p>
+    The framework automated the complete mutation cycle — code generation via LLM, compilation with GCC, runtime validation on the target system (Windows 11 + Microsoft Defender), and static analysis through the VirusTotal API. For each of the four LLMs tested, 20 functional variants were generated: 10 with additional target context and 10 without.
+</p>
+
+<p>
+    The <strong>context</strong> provided to the LLM included information about the target environment — specifically the active antivirus product, OS version, and architectural constraints. When context was supplied, the prompt instructed the model to generate mutations explicitly optimized to maximize evasion on that specific target. This represents the key differentiating factor of the adaptive approach.
+</p>
+
+<p>The mutation techniques applied by each LLM across variants included:</p>
+
+<div style="margin: 10px 0 20px 0;">
+    <span class="tag">String Encryption</span>
+    <span class="tag">Dynamic API Resolution</span>
+    <span class="tag">Control Flow Obfuscation</span>
+    <span class="tag">Variable/Function Renaming</span>
+    <span class="tag">Anti-Debugging Techniques</span>
+    <span class="tag">Dummy Code Injection</span>
+    <span class="tag">Timing-Based Anti-Analysis</span>
+    <span class="tag">Thread / Shellcode Execution</span>
+    <span class="tag">Persistence Mechanisms</span>
+</div>
+
+<h4>Manual Correction Requirement</h4>
+<p>
+    An important finding was that <strong>all variants required some degree of manual intervention</strong> to correct compilation or execution errors before becoming functional. Common error categories included incorrect XOR encryption implementations (present across nearly all mutations), incorrect API call logic, missing or misordered headers/libraries, and incomplete code with placeholders. This reveals a current limitation of fully autonomous LLM-based malware generation — a validation step (manual or automated) remains necessary to ensure final code correctness.
+</p>
+
+<h3>7. Results: Evasion Performance</h3>
+
+<p>
+    The table below summarizes the comparative performance of each LLM, both with and without target context. The base reverse shell code (unmodified) registered <strong>32 detections</strong> across 72 VirusTotal engines, with 0% evasion against Windows Defender statically or dynamically.
+</p>
+
+<table class="results-table">
+    <thead>
+        <tr>
+            <th>Context</th>
+            <th>Metric</th>
+            <th>GPT-4</th>
+            <th>Grok</th>
+            <th>Mistral</th>
+            <th>Qwen</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="4" style="color:#a8b2d8; font-weight:600; background:#0d1f38;">With Context</td>
+            <td>Total Attempts</td>
+            <td>12</td>
+            <td>15</td>
+            <td>18</td>
+            <td>14</td>
+        </tr>
+        <tr>
+            <td>Avg. VirusTotal Detections</td>
+            <td class="dim">9.7</td>
+            <td class="highlight">3.9</td>
+            <td>5.0</td>
+            <td>5.4</td>
+        </tr>
+        <tr>
+            <td>Static Evasion (Defender)</td>
+            <td class="highlight">90%</td>
+            <td>80%</td>
+            <td>80%</td>
+            <td>70%</td>
+        </tr>
+        <tr>
+            <td>Dynamic Evasion (Defender)</td>
+            <td>90%</td>
+            <td class="highlight">100%</td>
+            <td class="highlight">100%</td>
+            <td class="highlight">100%</td>
+        </tr>
+        <tr>
+            <td rowspan="4" style="color:#a8b2d8; font-weight:600; background:#0d1f38;">Without Context</td>
+            <td>Total Attempts</td>
+            <td>13</td>
+            <td>16</td>
+            <td>17</td>
+            <td>15</td>
+        </tr>
+        <tr>
+            <td>Avg. VirusTotal Detections</td>
+            <td>6.3</td>
+            <td>4.5</td>
+            <td class="highlight">3.6</td>
+            <td class="highlight">3.8</td>
+        </tr>
+        <tr>
+            <td>Static Evasion (Defender)</td>
+            <td>90%</td>
+            <td>50%</td>
+            <td>90%</td>
+            <td>70%</td>
+        </tr>
+        <tr>
+            <td>Dynamic Evasion (Defender)</td>
+            <td>70%</td>
+            <td>50%</td>
+            <td>70%</td>
+            <td>60%</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Computational Efficiency</h4>
+<table class="results-table">
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Type</th>
+            <th>Avg. Time / Mutation</th>
+            <th>CPU Usage</th>
+            <th>RAM Usage</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>GPT-4</strong></td>
+            <td>Cloud</td>
+            <td class="highlight">&lt; 1 min</td>
+            <td class="dim">—</td>
+            <td class="dim">—</td>
+        </tr>
+        <tr>
+            <td><strong>Grok</strong></td>
+            <td>Cloud</td>
+            <td class="highlight">&lt; 1 min</td>
+            <td class="dim">—</td>
+            <td class="dim">—</td>
+        </tr>
+        <tr>
+            <td><strong>Mistral</strong></td>
+            <td>Local</td>
+            <td>3–4 min</td>
+            <td>≈ 60%</td>
+            <td>≈ 80%</td>
+        </tr>
+        <tr>
+            <td><strong>Qwen</strong></td>
+            <td>Local</td>
+            <td>2–3 min</td>
+            <td>≈ 50%</td>
+            <td>≈ 60%</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>Code Diversity and Complexity Metrics</h4>
+<p>Mutations were also measured against the original baseline across several structural metrics, revealing the magnitude of transformations applied with context:</p>
+<table class="results-table">
+    <thead>
+        <tr>
+            <th>Metric (With Context)</th>
+            <th>GPT-4</th>
+            <th>Grok</th>
+            <th>Mistral</th>
+            <th>Qwen</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Levenshtein Distance</td>
+            <td>4314</td>
+            <td class="highlight">5344</td>
+            <td>2018</td>
+            <td>2247</td>
+        </tr>
+        <tr>
+            <td>Percentage Difference</td>
+            <td>83.0%</td>
+            <td class="highlight">87.8%</td>
+            <td>71.7%</td>
+            <td>72.5%</td>
+        </tr>
+        <tr>
+            <td>Δ Cyclomatic Complexity (CCN)</td>
+            <td>+26.8</td>
+            <td class="highlight">+34.9</td>
+            <td>+8.0</td>
+            <td>+14.0</td>
+        </tr>
+        <tr>
+            <td>Δ Lines of Code</td>
+            <td>+127.5</td>
+            <td class="highlight">+174.3</td>
+            <td>+53.4</td>
+            <td>+78.5</td>
+        </tr>
+        <tr>
+            <td>Δ File Size (Bytes)</td>
+            <td>+4213.6</td>
+            <td class="highlight">+5217.4</td>
+            <td>+1940.4</td>
+            <td>+2199.4</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>8. Key Findings and Analysis</h3>
+
+<h4>Context Dramatically Improves Evasion</h4>
+<p>
+    The inclusion of target-specific context in the prompt had a pronounced and measurable effect on evasion performance against Microsoft Defender. Grok's dynamic evasion rate jumped from 50% to 100% with context; GPT-4 improved from 70% to 90%. This confirms that explicitly instructing LLMs about the target environment leads them to prioritize techniques that specifically counteract that system's mechanisms — such as Dynamic API Resolution (which prevents static detection of critical function calls) and Anti-Debugging routines (which alter behavior when an analysis environment is detected).
+</p>
+
+<h4>The VirusTotal Paradox</h4>
+<p>
+    An important counterintuitive finding emerged: <strong>contextual mutations that improved evasion against the specific target also increased average detections on VirusTotal</strong>. GPT-4's average VirusTotal detections rose from 6.3 to 9.7 when context was added, while dynamic evasion against Defender improved from 70% to 90%. This "aggregated suspicion paradox" can be explained by three mechanisms:
+</p>
+<ul class="features-list">
+    <li><strong>Payload amplification:</strong> Contextual evasion routines (encryption layers, timing delays, dummy code) increase binary size and complexity, which many AV engines use as a heuristic suspicion signal.</li>
+    <li><strong>Repetitive patterns:</strong> When an LLM consistently applies certain evasion stubs across variants, those patterns become recognizable to multi-engine platforms.</li>
+    <li><strong>Multi-engine coverage:</strong> Specializing against one system's detection gaps tends to expose the file to other engines that don't share those same gaps.</li>
+</ul>
+<p>
+    This demonstrates that evasion metrics must be measured against specific targets in real environments — not solely through aggregated scanners.
+</p>
+
+<h4>Quality Over Complexity</h4>
+<p>
+    Despite Grok generating the highest structural complexity (Δ CCN +34.9) and Mistral the lowest (+8.0), both achieved 100% dynamic evasion with context. This confirms that <strong>the type and quality of transformations — not mere structural complexity — are the determining factor</strong>. A well-implemented string encryption or correctly applied Dynamic API Resolution matters far more than adding hundreds of lines of junk code.
+</p>
+
+<h4>Cloud vs. Local Model Trade-offs</h4>
+<p>
+    Cloud models (GPT-4, Grok) required fewer total attempts to produce functional variants (12–15 vs. 17–18) and generated mutations in under a minute. However, embedded safety policies in GPT-4 appear to have partially constrained its mutation strategies — notably, GPT-4 produced XOR encryption errors in all 10 context-based mutations, requiring manual correction. Local models (Mistral, Qwen), while more resource-intensive and slower, operated without content filters, demonstrating greater transformative freedom and confirming viability in restricted or offline operational scenarios.
+</p>
+
+<h4>Most Effective Evasion Techniques</h4>
+<p>Analysis of which techniques correlated most strongly with dynamic evasion success:</p>
+<ul class="features-list">
+    <li><strong>Dynamic API Resolution:</strong> Applied consistently by all models with context. Prevents static detection of critical function calls (e.g., <code>CreateProcess</code>), revealing behavior only after in-memory resolution.</li>
+    <li><strong>Control Flow Obfuscation + Anti-Analysis:</strong> Increases cyclomatic complexity and activates environment checks — if a sandbox or debugger is detected, behavior is altered to evade dynamic analysis.</li>
+    <li><strong>String Encryption:</strong> Applied by all models in virtually every mutation, obscuring identifying strings from static scanners.</li>
+    <li><strong>Anti-Debugging / Timing-Based Delays:</strong> Particularly effective against the behavioral analysis component of Windows Defender at runtime.</li>
+</ul>
+
+
+<h2 class="section-title">Conclusion</h2>
 <p>
     The convergence of metamorphic malware and Artificial Intelligence marks a pivotal escalation
     in the evolution of cyber threats.
@@ -606,29 +941,23 @@
 </p>
 
 <p>
-    As a result, long-standing defensive strategies centered on static indicators—such as file hashes,
-    signatures, and known byte patterns—are increasingly ineffective.
-    Even heuristic-based detection struggles when malicious logic is continuously rewritten
-    while preserving behavior.
-    Modern defenders are therefore forced to shift focus toward runtime observation,
-    memory-level inspection, and behavioral correlation across systems.
+    The empirical results presented here confirm that LLMs are capable of generating targeted metamorphic variants with high evasion rates against real-world endpoint defense systems, and that target-specific context significantly enhances this effectiveness. At the same time, the consistent requirement for manual correction in all tested models reveals that <em>fully autonomous malware generation remains an open problem</em> — though one that research is actively closing.
 </p>
 
 <p>
-    From a strategic perspective, this evolution reframes cybersecurity as a contest of intent rather than appearance.
-    Security tools must be capable of identifying malicious objectives—such as unauthorized access,
-    persistence, lateral movement, or data exfiltration—regardless of how the underlying code is structured.
-    Frameworks like MITRE ATT&CK provide a critical foundation for this approach by emphasizing
-    tactics, techniques, and procedures over static artifacts.
+    As a result, long-standing defensive strategies centered on static indicators — file hashes, signatures, and known byte patterns — are increasingly ineffective.
+    Even heuristic-based detection struggles when malicious logic is continuously rewritten while preserving behavior.
+    Modern defenders must shift focus toward runtime observation, memory-level inspection, behavioral correlation, and detection models that extract and model patterns in API call sequences and decryption operations. Datasets used to train defensive ML models should also include LLM-generated variants, which introduce a category of syntactic diversity not well represented in traditional corpora.
 </p>
 
 <p>
-    Looking forward, the continued integration of AI into offensive tooling suggests a future
-    where malware becomes increasingly autonomous, adaptive, and resilient.
-    Defending against such threats will require equally advanced countermeasures,
-    including AI-assisted detection, cross-layer visibility, and continuous threat modeling.
-    In this emerging landscape, understanding the evolution and mechanics of metamorphic malware
-    is no longer optional—it is essential for maintaining effective cybersecurity defenses.
+    From a strategic perspective, this evolution reframes cybersecurity as a contest of <em>intent rather than appearance</em>.
+    Security tools must be capable of identifying malicious objectives — unauthorized access, persistence, lateral movement, data exfiltration — regardless of how the underlying code is structured.
+    The MITRE ATT&CK framework provides a critical foundation for this approach by emphasizing tactics, techniques, and procedures over static artifacts.
+</p>
+
+<p>
+    Looking forward, defending against AI-driven adaptive threats will require equally advanced countermeasures: AI-assisted detection, cross-layer visibility, continuous threat modeling, and — crucially — the integration of context-aware evasion scenarios into defensive test suites. Understanding the evolution and mechanics of metamorphic malware is no longer optional — it is essential for maintaining effective cybersecurity defenses.
 </p>
 
     </div>
