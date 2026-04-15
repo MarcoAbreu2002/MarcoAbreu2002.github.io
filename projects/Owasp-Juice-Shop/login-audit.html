@@ -839,16 +839,16 @@ a valid user regardless of the provided credentials:
   -d '{"email":"support@juice-sh.op","password":"J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P"}'</code>
 
 <code class="comment"># Response — valid token returned immediately</code>
-<code class="pass">{"authentication":{"token":"eyJhbGci...","bid":5,"umail":"support@juice-sh.op"}}</code></pre>
+<code class="pass">{"authentication":{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6NiwidXNlcm5hbWUiOiIiLCJlbWFpbCI6InN1cHBvcnRAanVpY2Utc2gub3AiLCJwYXNzd29yZCI6IjM4Njk0MzNkNzRlM2QwYzg2ZmQyNTU2MmY4MzZiYzgyIiwicm9sZSI6ImFkbWluIiwiZGVsdXhlVG9rZW4iOiIiLCJsYXN0TG9naW5JcCI6IjEyNy4wLjAuMSIsInByb2ZpbGVJbWFnZSI6ImFzc2V0cy9wdWJsaWMvaW1hZ2VzL3VwbG9hZHMvZGVmYXVsdEFkbWluLnBuZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyNi0wNC0xNSAxOTowMToyMC4zOTkgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyNi0wNC0xNSAxOTozMDoyNi42ODEgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNzc2Mjg0NTY0fQ.ct4ojpRW96-aUFzECvx1_npZ4W-VgbkxxTx8O7jVHNaRA3ARZF74FrJWPwTkkmqBUnM9gJIAc7SaPs32pwsZA09WIZSuu82z1GzPoyEXrJYLjCXmyRAipSvVNKTXdkRFyiTRkCTbLDXEiJlhA5PKpy9_vq80dETMb3-we1VpUOo","bid":6,"umail":"support@juice-sh.op"}} </code></pre>
 
             <div class="screenshot">
-                <div class="screenshot-label">📸 Screenshot — grep output showing hardcoded passwords found in the source file</div>
-                <img src="images/hardcoded-grep-output.png" alt="hardcoded-grep-output.png" style="width:100%;display:block;">
+                <div class="screenshot-label">📸 Screenshot — Login form with hardcoded credentials found in the source file</div>
+                <img src="../images/login-stored.png" alt="login-stored.png" style="width:100%;display:block;">
             </div>
 
             <div class="screenshot">
                 <div class="screenshot-label">📸 Screenshot — successful login as support account using the hardcoded password</div>
-                <img src="images/hardcoded-login-success.png" alt="hardcoded-login-success.png" style="width:100%;display:block;">
+                <img src="../images/login-stored-scc.png" alt="login-stored-scc.png" style="width:100%;display:block;">
             </div>
 
             <h3 style="margin-top:28px;">How to Fix</h3>
