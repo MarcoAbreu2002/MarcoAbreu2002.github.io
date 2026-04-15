@@ -689,6 +689,13 @@ export function login () {
 
             <!-- HOW TO TEST -->
             <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>
+            The first step is to inspect the application's source code in order to understand how authentication is implemented 
+            and to identify any exposed user information. During this analysis, we can observe patterns in email formatting 
+            (e.g. <code>user@juice-sh.op</code>) and potentially discover valid or test accounts already present in the system. 
+            This allows us to target specific users more effectively — for example, attempting authentication as the admin user 
+            using <code>admin@juice-sh.op</code>.
+            </p>
             <p>Open Burp Suite, intercept the POST request to <code style="font-family:var(--font-mono);color:var(--yellow);">/rest/user/login</code>, and modify the email field. The injected payload terminates the string and comments out the password check entirely.</p>
 
             <ol class="step-list">
@@ -708,23 +715,39 @@ export function login () {
 <code class="pass">SELECT * FROM Users WHERE email = 'admin@juice-sh.op'</code></pre>
 
             <div class="screenshot">
-                <div class="screenshot-label">📸 Screenshot — Burp Suite intercept showing the injected email payload</div>
-                <img src="images/sqli-burp-intercept.png" alt="sqli-burp-intercept.png" style="width:100%;display:block;">
+                <div class="screenshot-label">📸 Screenshot — Burp Suite intercept showing the payload</div>
+                <img src="../images/burp-invalid.png" alt="sqli-burp-intercept.png" style="width:100%;display:block;">
             </div>
 
             <div class="screenshot">
                 <div class="screenshot-label">📸 Screenshot — Juice Shop responding with a valid JWT token after the SQL injection</div>
-                <img src="images/sqli-response-token.png" alt="sqli-response-token.png" style="width:100%;display:block;">
+                <img src="../images/burp-valid.png" alt="sqli-response-token.png" style="width:100%;display:block;">
             </div>
 
             <!-- ALTERNATIVE PAYLOAD -->
-            <p>An alternative payload using a boolean condition works even without knowing a valid email address:</p>
+
+            <p>
+With a valid email pattern identified, we can craft a more targeted SQL injection payload and test it using 
+Burp Suite. However, even without any prior knowledge of valid emails, authentication can still be bypassed 
+using a boolean-based SQL injection such as <code>' OR '1'='1'--</code>, which forces the query to return 
+a valid user regardless of the provided credentials:
+</p>
             <pre data-label="Alternative payload — any account">
 <code class="input">email=' OR '1'='1'--&amp;password=anything</code>
 
 <code class="comment"># Resulting SQL:</code>
 <code class="fail">SELECT * FROM Users WHERE email = '' OR '1'='1'</code>
 <code class="comment"># Returns the first user in the database (typically the admin)</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Juice Shop login form with a boolean-based SQL injection</div>
+                <img src="../images/login-sql-inj.png" alt="login-sql-inj.png" style="width:100%;display:block;">
+            </div>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Juice Shop successful login after boolean-based SQL injection</div>
+                <img src="../images/login-sql-inj-scc.png" alt="login-sql-inj-scc.png" style="width:100%;display:block;">
+            </div>
 
             <!-- FIX -->
             <h3 style="margin-top:28px;">How to Fix</h3>
