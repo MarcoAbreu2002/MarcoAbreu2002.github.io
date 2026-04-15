@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fixing OWASP Juice Shop | Marco Abreu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a192f;
+            --bg-secondary: #112240;
+            --bg-tertiary: #1d3461;
+            --accent-color: #64ffda;
+            --accent-dim: rgba(100, 255, 218, 0.1);
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+            --text-muted: #495670;
+            --font-mono: 'Fira Code', monospace;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            line-height: 1.7;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 25, 47, 0.92);
+            backdrop-filter: blur(10px);
+            padding: 18px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--text-muted);
+        }
+
+        .logo {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .nav-links { list-style: none; display: flex; gap: 30px; }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .nav-links a:hover { color: var(--accent-color); }
+
+        .hero {
+            padding: 160px 60px 80px;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        .hero-label {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin-bottom: 30px;
+        }
+
+        .tag-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-color);
+            background: var(--accent-dim);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .section { padding: 60px; }
+
+        .container { max-width: 960px; margin: 0 auto; }
+
+        h2 {
+            font-family: var(--font-mono);
+            margin-bottom: 20px;
+        }
+
+        p { color: var(--text-secondary); margin-bottom: 16px; }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--text-muted);
+            border-radius: 8px;
+            padding: 24px;
+            margin: 20px 0;
+            transition: transform 0.2s, border 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+        }
+
+        .card-title {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            margin-bottom: 8px;
+        }
+
+        .card a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            border-top: 1px solid var(--text-muted);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 700px) {
+            .hero, .section { padding: 24px; }
+            .navbar { padding: 16px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="../index.html" style="text-decoration:none;">
+        <div class="logo">&lt;Marco Abreu /&gt;</div>
+    </a>
+    <ul class="nav-links">
+        <li><a href="../index.html#projects">← Back to Projects</a></li>
+    </ul>
+</nav>
+
+<div class="hero">
+    <p class="hero-label">Security Project</p>
+    <h1>Fixing OWASP Juice Shop</h1>
+    <p class="hero-subtitle">
+        A full, file-by-file security remediation of a deliberately vulnerable Node.js application. 
+        This project documents how real-world vulnerabilities are identified, exploited, and properly fixed — 
+        following modern secure coding practices.
+    </p>
+
+    <div class="tag-row">
+        <span class="tag">Node.js</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">OWASP Top 10</span>
+        <span class="tag">Web Security</span>
+        <span class="tag">Penetration Testing</span>
+    </div>
+</div>
+
+<section class="section">
+<div class="container">
+
+    <h2>Project Overview</h2>
+    <p>
+        OWASP Juice Shop is an intentionally insecure web application designed to simulate real-world vulnerabilities.
+        In this project, I take a different approach: instead of just exploiting these flaws, I systematically fix them.
+    </p>
+
+    <p>
+        Each file in the backend is audited individually. For every vulnerable component, I:
+    </p>
+
+    <ul style="color:var(--text-secondary); padding-left:20px; margin-bottom:20px;">
+        <li>Identify vulnerabilities through manual code review and testing</li>
+        <li>Demonstrate real exploitation techniques</li>
+        <li>Explain the root cause in detail</li>
+        <li>Implement secure, production-grade fixes</li>
+    </ul>
+
+    <h2>Methodology</h2>
+    <p>
+        The goal is not just to patch issues, but to understand how vulnerabilities interact and how they can be chained
+        together in real attack scenarios. This includes testing with tools such as Burp Suite, Hydra, and hashcat,
+        along with manual analysis of the TypeScript codebase.
+    </p>
+
+    <h2>Case Studies</h2>
+    <p>
+        Below are detailed audits of individual files. Each one represents a focused security analysis of a specific
+        part of the application.
+    </p>
+
+    <!-- CARDS -->
+
+    <div class="card">
+        <a href="/projects/Owasp-Juice-Shop/login-audit.html">
+            <div class="card-title">Authentication — login.ts</div>
+            <p>Analysis and remediation of authentication vulnerabilities including SQL injection, weak hashing, and JWT flaws.</p>
+        </a>
+    </div>
+
+    <div class="card">
+        <a href="#">
+            <div class="card-title">Authorization — (coming soon)</div>
+            <p>Upcoming analysis of access control issues such as IDOR and privilege escalation.</p>
+        </a>
+    </div>
+
+    <div class="card">
+        <a href="#">
+            <div class="card-title">Business Logic — (coming soon)</div>
+            <p>Investigation into logic flaws that allow abuse of application functionality.</p>
+        </a>
+    </div>
+
+    <h2>Why This Project Matters</h2>
+    <p>
+        Many security exercises focus only on exploitation. This project goes further by demonstrating how to properly
+        fix vulnerabilities in a maintainable and scalable way — which is what real-world engineering and security roles require.
+    </p>
+
+    <p>
+        It reflects a complete understanding of both offensive and defensive security practices.
+    </p>
+
+</div>
+</section>
+
+<footer>
+    <p>Marco Abreu © 2026</p>
+</footer>
+
+</body>
+</html>
