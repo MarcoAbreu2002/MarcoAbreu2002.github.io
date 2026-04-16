@@ -1108,119 +1108,68 @@ export const verifyPassword = async (plain: string, stored: string) =>
     </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════════ -->
-<!-- VULN 05 — USERNAME ENUMERATION -->
-<!-- ════════════════════════════════════════════════════════════ -->
-<div class="vuln-entry">
-    <div class="vuln-header medium">
-        <span class="vuln-index">05</span>
-        <div class="vuln-header-text">
-            <p class="vuln-title">Username / Email Enumeration</p>
-            <p class="vuln-subtitle">Response timing leaks valid accounts (no rate limiting)</p>
+   <!-- ════════════════════════════════════════════════════════════ -->
+    <!-- VULN 05 — USERNAME ENUMERATION -->
+    <!-- ════════════════════════════════════════════════════════════ -->
+    <div class="vuln-entry">
+        <div class="vuln-header medium">
+            <span class="vuln-index">05</span>
+            <div class="vuln-header-text">
+                <p class="vuln-title">Username / Email Enumeration</p>
+                <p class="vuln-subtitle">Response timing and error messages reveal valid accounts</p>
+            </div>
+            <span class="severity-badge medium">Medium</span>
         </div>
-        <span class="severity-badge medium">Medium</span>
-    </div>
-    <div class="vuln-body">
+        <div class="vuln-body">
 
-        <p>The login endpoint (<code>/rest/user/login</code>) leaks whether an email address exists through <strong>response timing</strong>. When the email is invalid, the query returns immediately (fast path). When the email is valid, the server still performs the MD5 hash comparison before rejecting the login (slower path). This timing side-channel allows an attacker to enumerate valid accounts.</p>
+            <p>The login handler has two enumeration vectors: the error message is identical for both cases (<code style="font-family:var(--font-mono);color:var(--yellow);">Invalid email or password</code>), which is good — but the <strong style="color:var(--text-primary);">response time differs</strong> depending on whether the email exists. When an email is not found the query returns immediately; when it is found the password hash comparison runs, adding measurable latency. An attacker can use timing to build a list of valid email addresses.</p>
 
-        <h3 style="margin-top:24px;">Vulnerable Code</h3>
-        <pre data-label="routes/login.ts — response path">
+            <h3 style="margin-top:24px;">Vulnerable Code</h3>
+            <pre data-label="routes/login.ts — response path">
 <code class="neutral">.then((authenticatedUser) => {
   const user = utils.queryResultToJson(authenticatedUser)
   if (user.data?.id && user.data.totpSecret !== '') {
-    </code><code class="comment">// ← Path A: email found + TOTP required — longer</code>
+    </code><code class="comment">// ← Path A: email found, TOTP required — longer path</code>
 <code class="neutral">    res.status(401).json({ status: 'totp_token_required', ... })
   } else if (user.data?.id) {
-    </code><code class="comment">// ← Path B: email found, no TOTP — even longer</code>
+    </code><code class="comment">// ← Path B: email found, no TOTP — afterLogin() runs</code>
 <code class="neutral">    afterLogin(user, res, next)
   } else {
     </code><code class="comment">// ← Path C: email NOT found — immediate short-circuit</code>
 <code class="hilite">    res.status(401).send(res.__('Invalid email or password.'))
-    // ❌ Timing difference leaks email validity</code>
+    // ❌ Timing difference between Path C and Paths A/B leaks email validity</code>
 <code class="neutral">  }
 })</code></pre>
 
-        <h3 style="margin-top:28px;">Step-by-Step: How to Test This (Local Lab)</h3>
-        <p>You can verify the timing leak in under 2 minutes using only <strong>curl</strong> (no Burp required).</p>
-        
-        <ol class="step-list">
-            <li>Make sure Juice Shop is running at <code>http://localhost:3000</code>.</li>
-            <li>Open a terminal and test a <strong>known invalid email</strong> with a wrong password:</li>
-        </ol>
-        
-        <pre data-label="Test — Invalid email (fast response)">
-<code class="command">time curl -s -o /dev/null -w "%{time_total}\n" \
-  -X POST http://localhost:3000/rest/user/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"random999@juice-sh.op","password":"wrong"}'</code></pre>
-        <p>→ You will usually see ~8–18 ms.</p>
+            <h3 style="margin-top:28px;">How to Exploit</h3>
+            <p>Use <strong style="color:var(--text-primary);">Burp Suite Intruder</strong> with a list of candidate email addresses. Measure response times — requests with valid emails will consistently take longer than invalid ones.</p>
 
-        <ol class="step-list" start="3">
-            <li>Now test a <strong>known valid email</strong> (e.g. from your previous SQLi dump):</li>
-        </ol>
-        
-        <pre data-label="Test — Valid email (slower response)">
-<code class="command">time curl -s -o /dev/null -w "%{time_total}\n" \
-  -X POST http://localhost:3000/rest/user/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@juice-sh.op","password":"wrong"}'</code></pre>
-        <p>→ You will usually see ~30–55 ms (sometimes more if TOTP path is taken).</p>
+            <ol class="step-list">
+                <li>Capture a login POST request and send to Burp Intruder.</li>
+                <li>Set the email parameter as the payload position with a list of candidate addresses.</li>
+                <li>Run the attack and sort results by <strong style="color:var(--text-primary);">Response Received</strong> time in the results tab.</li>
+                <li>Valid emails will cluster around a higher response time than invalid ones.</li>
+            </ol>
 
-        <ol class="step-list" start="4">
-            <li>Repeat each test 5–10 times and note the difference. Valid emails are consistently slower because the server performs the MD5 hash comparison.</li>
-            <li>To enumerate many emails at once, use this one-liner (replace the list with your own candidates):</li>
-        </ol>
-        
-        <pre data-label="Quick enumeration script (bash)">
-<code class="command">for email in admin@juice-sh.op bender@juice-sh.op jim@juice-sh.op random999@juice-sh.op; do
-  echo -n "$email → "
-  time curl -s -o /dev/null -w "%{time_total}\n" \
-    -X POST http://localhost:3000/rest/user/login \
-    -H "Content-Type: application/json" \
-    -d "{\"email\":\"$email\",\"password\":\"wrong\"}" 2>&1 | tail -1
-done</code></pre>
+            <pre data-label="Burp Suite — timing observation">
+<code class="comment"># Invalid email — query finds nothing, returns fast</code>
+<code class="fail">POST /rest/user/login  →  401  |  Response time: ~12ms  (email not found)</code>
 
-        <div class="screenshot">
-            <div class="screenshot-label">
-                📸 Screenshot — curl timing test showing valid vs invalid emails
+<code class="comment"># Valid email — hash comparison runs, slightly slower</code>
+<code class="pass">POST /rest/user/login  →  401  |  Response time: ~38ms  (email found, wrong password)</code></pre>
+
+            <div class="screenshot">
+                <div class="screenshot-label">📸 Screenshot — Burp Suite Intruder results sorted by response time, revealing valid email addresses</div>
+                <img src="images/enum-burp-timing.png" alt="enum-burp-timing.png" style="width:100%;display:block;">
             </div>
-            <img src="../images/enum-timing-curl.png" alt="curl timing test showing valid emails are slower" style="width:100%;display:block;">
-        </div>
 
-        <h3 style="margin-top:28px;">How to Exploit at Scale (Optional — Professional Method)</h3>
-        <p>Use Burp Suite Intruder (same as described in your original report) or the Python script below for larger wordlists.</p>
+            <h3 style="margin-top:28px;">How to Fix</h3>
+            <p>Always run the password comparison regardless of whether the email was found, using a pre-computed dummy hash. This makes the response time constant for both valid and invalid email addresses.</p>
 
-        <pre data-label="Python timing enumerator (optional)">
-<code class="comment"># save as enum.py and run with: python3 enum.py</code>
-<code class="neutral">import requests, time
-emails = ["admin@juice-sh.op", "bender@juice-sh.op", "random999@juice-sh.op", ...]
-for email in emails:
-    start = time.time()
-    r = requests.post("http://localhost:3000/rest/user/login",
-                      json={"email": email, "password": "wrong"})
-    duration = (time.time() - start) * 1000
-    print(f"{email:30} → {duration:6.2f} ms {'VALID' if duration > 25 else 'invalid'}")</code></pre>
-
-        <div class="screenshot">
-            <div class="screenshot-label">📸 Screenshot — Burp Suite Intruder results sorted by response time (valid emails cluster higher)</div>
-            <img src="images/enum-burp-timing.png" alt="enum-burp-timing.png" style="width:100%;display:block;">
-        </div>
-
-        <h3 style="margin-top:28px;">Why This Is Dangerous</h3>
-        <ul>
-            <li>No rate limiting on login attempts</li>
-            <li>Valid emails can be harvested and used for phishing, password spraying, or account takeover</li>
-            <li>Combined with the weak MD5 hashes from VULN 04 → full compromise is very easy</li>
-        </ul>
-
-        <h3 style="margin-top:28px;">How to Fix</h3>
-        <p>Always perform the password hash comparison (even for non-existent users) using a constant-time dummy hash. This eliminates the timing difference.</p>
-        
-        <div class="diff-grid">
-            <div class="diff-panel">
-                <div class="diff-panel-header before">❌ Vulnerable</div>
-                <pre>
+            <div class="diff-grid">
+                <div class="diff-panel">
+                    <div class="diff-panel-header before">❌ Vulnerable</div>
+                    <pre>
 <code class="fail">// Short-circuits immediately if email not found
 // — measurable timing difference
 .then((authenticatedUser) => {
@@ -1232,29 +1181,31 @@ for email in emails:
     // ❌ Skips hash work — returns faster
   }
 })</code></pre>
-            </div>
-            <div class="diff-panel">
-                <div class="diff-panel-header after">✅ Fixed</div>
-                <pre>
-<code class="fix">// Always run hash comparison — constant time
-const DUMMY_HASH = 'dummy-hash-for-timing-protection'
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header after">✅ Fixed</div>
+                    <pre>
+<code class="fix">// Always run bcrypt.compare — constant time
+const DUMMY_HASH = await bcrypt.hash('dummy', 12)
 
 .then(async (authenticatedUser) => {
   const user = queryResultToJson(authenticatedUser)
   const storedHash = user.data?.password ?? DUMMY_HASH
-  const valid = await comparePassword(req.body.password, storedHash)
+  const valid = await bcrypt.compare(
+    req.body.password || '', storedHash
+  )
   if (valid && user.data?.id) {
     afterLogin(user, res, next)
   } else {
-    // Same code path — same timing for everyone
+    // Same code path — same timing
     res.status(401).send('Invalid email or password.')
   }
 })</code></pre>
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
-</div>
 
     <!-- ════════════════════════════════════════════════════════════ -->
     <!-- VULN 06 — JWT INVALIDATION -->
