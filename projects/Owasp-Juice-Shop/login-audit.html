@@ -1006,63 +1006,82 @@ app.post(
     </div>
 </div>
 
-    <!-- ════════════════════════════════════════════════════════════ -->
-    <!-- VULN 04 — WEAK HASHING -->
-    <!-- ════════════════════════════════════════════════════════════ -->
-    <div class="vuln-entry">
-        <div class="vuln-header high">
-            <span class="vuln-index">04</span>
-            <div class="vuln-header-text">
-                <p class="vuln-title">Weak Password Hashing (MD5)</p>
-                <p class="vuln-subtitle">security.hash() uses MD5 — crackable in milliseconds</p>
-            </div>
-            <span class="severity-badge high">High</span>
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- VULN 04 — WEAK HASHING -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="vuln-entry">
+    <div class="vuln-header high">
+        <span class="vuln-index">04</span>
+        <div class="vuln-header-text">
+            <p class="vuln-title">Weak Password Hashing (MD5)</p>
+            <p class="vuln-subtitle">security.hash() uses unsalted MD5 — instantly crackable when extracted</p>
         </div>
-        <div class="vuln-body">
+        <span class="severity-badge high">High</span>
+    </div>
+    <div class="vuln-body">
+        <p>The <code style="font-family:var(--font-mono);color:var(--yellow);">security.hash()</code> function in OWASP Juice Shop uses plain MD5 without salt or work factor. This makes password hashes extremely easy to crack once they are obtained from the database.</p>
 
-            <p>The <code style="font-family:var(--font-mono);color:var(--yellow);">security.hash()</code> function used to hash passwords before comparison uses MD5. MD5 is a cryptographic hash function not suitable for passwords: it has no salt, no work factor, and can be computed billions of times per second on consumer hardware. Combined with the SQLi above, an attacker can dump all password hashes and crack them trivially with a rainbow table or hashcat.</p>
-
-            <h3 style="margin-top:24px;">Vulnerable Code</h3>
-            <pre data-label="lib/insecurity.ts — security.hash()">
-<code class="neutral">// The hash function in insecurity.ts — referenced in the login query</code>
-<code class="hilite">export const hash = (data: string) => crypto.createHash('md5').update(data).digest('hex')
-// ❌ MD5 — no salt, no work factor, GPU-crackable in milliseconds</code>
-
-<code class="comment">// Used in login.ts:</code>
+        <h3 style="margin-top:24px;">Vulnerable Code</h3>
+        <pre data-label="lib/insecurity.ts — security.hash()">
+<code class="neutral">// The hash function used for password storage and login</code>
+<code class="hilite">export const hash = (data: string) => crypto.createHash('md5').update(data).digest('hex')</code>
+<code class="comment">// Used during login (in login.ts):</code>
 <code class="hilite">... AND password = '${security.hash(req.body.password || '')}' ...</code></pre>
 
-            <h3 style="margin-top:28px;">How to Exploit</h3>
-            <p>After extracting hashes via the SQL injection, use <strong style="color:var(--text-primary);">hashcat</strong> in MD5 mode against a wordlist. Common passwords are cracked in under a second.</p>
+        <h3 style="margin-top:28px;">How to Discover the Hashes</h3>
+        <p>The password hashes can be extracted using the same SQL injection vulnerability in the product search endpoint (<code>/rest/products/search</code>).</p>
+        
+        <ol class="step-list">
+            <li>Open the Juice Shop homepage and go to the search bar.</li>
+            <li>Use the following payload to dump the <code>Users</code> table via UNION-based SQL injection:</li>
+        </ol>
+        
+        <pre data-label="SQL Injection Payload to Extract Hashes">
+<code class="input">http://localhost:3000/rest/products/search?q=qwert')) UNION SELECT id,email,password,NULL,NULL,NULL,NULL,NULL,NULL FROM Users--</code></pre>
 
-            <ol class="step-list">
-                <li>Exploit the SQL injection to dump the Users table (or use SQLiteOnline with the database file).</li>
-                <li>Extract the <code style="font-family:var(--font-mono);color:var(--yellow);">password</code> column — it contains MD5 hashes.</li>
-                <li>Run hashcat in mode 0 (raw MD5) with rockyou.txt.</li>
-                <li>Admin password <code style="font-family:var(--font-mono);color:var(--yellow);">admin123</code> cracks instantly.</li>
-            </ol>
+        <p>After submitting the payload, the JSON response (or the rendered search results) will contain extra entries where the <strong>email</strong> and <strong>password</strong> fields appear. The <code>password</code> column contains the unsalted MD5 hashes for all users, including the administrator.</p>
 
-            <pre data-label="hashcat — crack MD5 hashes">
-<code class="comment"># Dump a hash from the DB — e.g. admin@juice-sh.op</code>
-<code class="input">0192023a7bbd73250516f069df18b500</code>
-
-<code class="command">hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt</code>
-
-<code class="comment"># Output:</code>
-<code class="pass">0192023a7bbd73250516f069df18b500:admin123</code>
-<code class="comment"># Cracked in &lt; 1 second on a standard GPU</code></pre>
-
-            <div class="screenshot">
-                <div class="screenshot-label">📸 Screenshot — hashcat output showing MD5 hash cracked to plaintext "admin123"</div>
-                <img src="images/md5-hashcat-cracked.png" alt="md5-hashcat-cracked.png" style="width:100%;display:block;">
+        <div class="screenshot">
+            <div class="screenshot-label">
+                📸 Screenshot — Extracted Password Hashes via SQLi
             </div>
+            <img src="../images/print-hashes.png" alt="SQL Injection dumping MD5 password hashes" style="width:100%;display:block;">
+        </div>
 
-            <h3 style="margin-top:28px;">How to Fix</h3>
-            <p>Replace MD5 with <code style="font-family:var(--font-mono);color:var(--yellow);">bcrypt</code> or <code style="font-family:var(--font-mono);color:var(--yellow);">argon2</code>. These are adaptive hashing functions with a configurable work factor and automatic salting — designed specifically for passwords.</p>
+        <h3 style="margin-top:28px;">How to Exploit (Cracking the Hashes)</h3>
+        <p>Once the hashes are extracted, they can be cracked instantly because they are unsalted MD5.</p>
+        
+        <ol class="step-list">
+            <li>Copy the MD5 hashes from the <code>password</code> column (e.g. <code>0192023a7bbd73250516f069df18b500</code> for the admin account).</li>
+            <li>Use <strong>hashcat</strong> (or John the Ripper / online crackers) in raw MD5 mode:</li>
+        </ol>
 
-            <div class="diff-grid">
-                <div class="diff-panel">
-                    <div class="diff-panel-header before">❌ Vulnerable</div>
-                    <pre>
+        <pre data-label="hashcat — Cracking the extracted MD5 hashes">
+<code class="comment"># Example hash from admin@juice-sh.op</code>
+<code class="input">0192023a7bbd73250516f069df18b500</code>
+<code class="command">hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt --force</code>
+<code class="comment"># Result (cracked in &lt; 1 second):</code>
+<code class="pass">0192023a7bbd73250516f069df18b500:admin123</code></pre>
+
+        <div class="screenshot">
+            <div class="screenshot-label">📸 Screenshot — hashcat successfully cracking the MD5 hash to "admin123"</div>
+            <img src="images/md5-hashcat-cracked.png" alt="hashcat output showing cracked password" style="width:100%;display:block;">
+        </div>
+
+        <h3 style="margin-top:28px;">Why This Is Dangerous</h3>
+        <ul>
+            <li>No salt → identical passwords produce identical hashes</li>
+            <li>No work factor → billions of guesses per second on modern hardware</li>
+            <li>Combined with SQL injection → full account takeover is trivial</li>
+        </ul>
+
+        <h3 style="margin-top:28px;">How to Fix</h3>
+        <p>Replace the insecure MD5 hashing with a modern, adaptive password hashing algorithm such as <code>bcrypt</code>, <code>Argon2</code>, or <code>scrypt</code>.</p>
+        
+        <div class="diff-grid">
+            <div class="diff-panel">
+                <div class="diff-panel-header before">❌ Vulnerable</div>
+                <pre>
 <code class="fail">// lib/insecurity.ts
 export const hash = (data: string) =>
   crypto
@@ -1071,28 +1090,23 @@ export const hash = (data: string) =>
     .digest('hex')
 // No salt. No work factor.
 // Crackable in milliseconds.</code></pre>
-                </div>
-                <div class="diff-panel">
-                    <div class="diff-panel-header after">✅ Fixed</div>
-                    <pre>
+            </div>
+            <div class="diff-panel">
+                <div class="diff-panel-header after">✅ Fixed</div>
+                <pre>
 <code class="fix">import bcrypt from 'bcrypt'
 
-// On registration:
+// On user registration:
 export const hashPassword = async (pw: string) =>
   bcrypt.hash(pw, 12)
-// Work factor 12 = ~300ms per hash
-// Salt is generated and stored automatically
 
 // On login:
-export const verifyPassword = async (
-  plain: string,
-  stored: string
-) => bcrypt.compare(plain, stored)</code></pre>
-                </div>
+export const verifyPassword = async (plain: string, stored: string) =>
+  bcrypt.compare(plain, stored)</code></pre>
             </div>
-
         </div>
     </div>
+</div>
 
     <!-- ════════════════════════════════════════════════════════════ -->
     <!-- VULN 05 — USERNAME ENUMERATION -->
