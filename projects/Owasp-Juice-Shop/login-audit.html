@@ -939,20 +939,26 @@ a valid user regardless of the provided credentials:
       -s 3000 \
       localhost \
       http-post-form \
-      "/rest/user/login:email=^USER^&password=^PASS^:Invalid email or password"</code>
+      "/rest/user/login:email=^USER^&password=^PASS^:Invalid email or password"</code></pre>
 
-                    <div class="screenshot">
+                            <div class="screenshot">
             <div class="screenshot-label">
                 📸 Screenshot — Hydra output demonstrating successful password discovery
             </div>
             <img src="../images/brute-hydra.png" alt="ratelimit-hydra-success.png" style="width:100%;display:block;">
         </div>
 
-<code class="comment"># Burp Suite Intruder alternative:</code>
-<code class="comment"># 1. Capture POST /rest/user/login request</code>
-<code class="comment"># 2. Send to Intruder and mark password parameter</code>
-<code class="comment"># 3. Load wordlist (e.g. rockyou.txt)</code>
-<code class="comment"># 4. Observe responses — no 429 / lockout behavior is triggered</code></pre>
+        <p>
+            Burp Suite Intruder alternative:
+        </p>
+
+            <ol class="step-list">
+            <li>Capture POST /rest/user/login request</li>
+            <li>Send to Intruder and mark password parameter</li>
+            <li>Load wordlist (e.g. rockyou.txt)</li>
+            <li>Observe responses — no 429 / lockout behavior is triggered</li>
+        </ol>
+
 
         <div class="screenshot">
             <div class="screenshot-label">
