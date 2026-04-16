@@ -884,80 +884,106 @@ a valid user regardless of the provided credentials:
         </div>
     </div>
 
-    <!-- ════════════════════════════════════════════════════════════ -->
-    <!-- VULN 03 — NO RATE LIMITING -->
-    <!-- ════════════════════════════════════════════════════════════ -->
-    <div class="vuln-entry">
-        <div class="vuln-header high">
-            <span class="vuln-index">03</span>
-            <div class="vuln-header-text">
-                <p class="vuln-title">No Rate Limiting / Brute Force Protection</p>
-                <p class="vuln-subtitle">Login endpoint accepts unlimited requests with no throttling</p>
-            </div>
-            <span class="severity-badge high">High</span>
+  <!-- ════════════════════════════════════════════════════════════ -->
+<!-- VULN 03 — NO RATE LIMITING -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<div class="vuln-entry">
+    <div class="vuln-header high">
+        <span class="vuln-index">03</span>
+        <div class="vuln-header-text">
+            <p class="vuln-title">No Rate Limiting / Brute Force Protection</p>
+            <p class="vuln-subtitle">Login endpoint accepts unlimited requests with no throttling</p>
         </div>
-        <div class="vuln-body">
+        <span class="severity-badge high">High</span>
+    </div>
 
-            <p>The login route has no request throttling, account lockout, or CAPTCHA mechanism. An attacker can send thousands of login attempts per second, making brute force and credential stuffing attacks trivially effective — especially given that the password hashing is weak (see Vulnerability 04).</p>
+    <div class="vuln-body">
 
-            <h3 style="margin-top:24px;">Vulnerable Code</h3>
-            <pre data-label="routes/login.ts — no middleware present">
+        <p>
+            The login endpoint does not implement rate limiting, account lockout, or any form of automated abuse prevention.
+            This allows an attacker to perform unlimited authentication attempts against a valid user account without restriction,
+            making brute force and credential stuffing attacks feasible at scale.
+        </p>
+
+        <h3 style="margin-top:24px;">Vulnerable Code</h3>
+        <pre data-label="routes/login.ts — no middleware present">
 <code class="neutral">// In app.ts / server setup — the route is registered with no rate limiting:</code>
 <code class="hilite">app.post('/rest/user/login', login())
 // ❌ No express-rate-limit middleware
-// ❌ No account lockout after N failures
-// ❌ No CAPTCHA or challenge after repeated failures</code></pre>
+// ❌ No account lockout after repeated failures
+// ❌ No CAPTCHA or challenge mechanism</code></pre>
 
-            <h3 style="margin-top:28px;">How to Exploit</h3>
-            <p>Use <strong style="color:var(--text-primary);">Hydra</strong> or Burp Suite Intruder to run an automated password list attack against a known email address. With no rate limiting, the full <code style="font-family:var(--font-mono);color:var(--yellow);">rockyou.txt</code> wordlist can be tested in minutes.</p>
+        <h3 style="margin-top:28px;">How to Exploit</h3>
+        <p>
+            The attack requires a valid email address, which in this case was obtained from
+            <strong style="color:var(--text-primary);">hardcoded credentials identified in the application source code</strong>
+            during a previous vulnerability analysis.
+        </p>
 
-            <ol class="step-list">
-                <li>Confirm a valid email address exists (e.g. from the SQLi above or the admin account <code style="font-family:var(--font-mono);color:var(--yellow);">admin@juice-sh.op</code>).</li>
-                <li>Prepare a password wordlist (e.g. <code style="font-family:var(--font-mono);color:var(--yellow);">rockyou.txt</code> or a targeted list).</li>
-                <li>Run Hydra against the REST login endpoint as shown below.</li>
-                <li>Observe that there is no lockout, delay, or error rate increase regardless of attempt count.</li>
-            </ol>
+        <p>
+            With a valid username identified, automated tools such as <strong style="color:var(--text-primary);">Hydra</strong>
+            or Burp Suite Intruder can be used to test large password lists against the login endpoint.
+            Due to the absence of rate limiting, the application does not introduce delays, blocking, or progressive defenses.
+        </p>
 
-            <pre data-label="Hydra — brute force command">
-<code class="command">hydra -l admin@juice-sh.op \
+        <ol class="step-list">
+            <li>Confirm a valid email address (previously extracted from hardcoded credentials in the source code).</li>
+            <li>Prepare a password wordlist such as <code style="font-family:var(--font-mono);color:var(--yellow);">rockyou.txt</code>.</li>
+            <li>Run automated login attempts against <code style="font-family:var(--font-mono);color:var(--yellow);">/rest/user/login</code>.</li>
+            <li>Observe that the server continues to accept requests without lockout, delay, or throttling mechanisms.</li>
+        </ol>
+
+        <pre data-label="Hydra — brute force command">
+<code class="command">hydra -l testing@juice-sh.op \
       -P /usr/share/wordlists/rockyou.txt \
+      -s 3000 \
       localhost \
       http-post-form \
       "/rest/user/login:email=^USER^&password=^PASS^:Invalid email or password"</code>
 
-<code class="comment"># Alternatively with Burp Suite Intruder:</code>
-<code class="comment"># 1. Capture login POST → Send to Intruder</code>
-<code class="comment"># 2. Mark §password§ as the payload position</code>
-<code class="comment"># 3. Load password list → Start Attack</code>
-<code class="comment"># 4. Filter by response length — no 429 responses will appear</code></pre>
-
-            <div class="screenshot">
-                <div class="screenshot-label">📸 Screenshot — Burp Suite Intruder running against the login endpoint with no rate limiting response</div>
-                <img src="images/ratelimit-burp-intruder.png" alt="ratelimit-burp-intruder.png" style="width:100%;display:block;">
+                    <div class="screenshot">
+            <div class="screenshot-label">
+                📸 Screenshot — Hydra output demonstrating successful password discovery
             </div>
+            <img src="../images/brute-hydra.png" alt="ratelimit-hydra-success.png" style="width:100%;display:block;">
+        </div>
 
-            <div class="screenshot">
-                <div class="screenshot-label">📸 Screenshot — Hydra output showing successful credential found via brute force</div>
-                <img src="images/ratelimit-hydra-success.png" alt="ratelimit-hydra-success.png" style="width:100%;display:block;">
+<code class="comment"># Burp Suite Intruder alternative:</code>
+<code class="comment"># 1. Capture POST /rest/user/login request</code>
+<code class="comment"># 2. Send to Intruder and mark password parameter</code>
+<code class="comment"># 3. Load wordlist (e.g. rockyou.txt)</code>
+<code class="comment"># 4. Observe responses — no 429 / lockout behavior is triggered</code></pre>
+
+        <div class="screenshot">
+            <div class="screenshot-label">
+                📸 Screenshot — Burp Suite Intruder attacking login endpoint without rate limiting
             </div>
+            <img src="../images/brute-burp.png" alt="ratelimit-burp-intruder.png" style="width:100%;display:block;">
+        </div>
 
-            <h3 style="margin-top:28px;">How to Fix</h3>
-            <p>Apply <code style="font-family:var(--font-mono);color:var(--yellow);">express-rate-limit</code> middleware specifically on the login route. Combine with a failed-attempt counter per email for account-level lockout.</p>
 
-            <div class="diff-grid">
-                <div class="diff-panel">
-                    <div class="diff-panel-header before">❌ Vulnerable</div>
-                    <pre>
-<code class="fail">// No protection whatsoever
+        <h3 style="margin-top:28px;">How to Fix</h3>
+        <p>
+            Implement rate limiting on authentication endpoints using middleware such as
+            <code style="font-family:var(--font-mono);color:var(--yellow);">express-rate-limit</code>,
+            combined with per-account failed login tracking and optional CAPTCHA challenges after repeated failures.
+        </p>
+
+        <div class="diff-grid">
+            <div class="diff-panel">
+                <div class="diff-panel-header before">❌ Vulnerable</div>
+                <pre>
+<code class="fail">// No protection applied
 app.post('/rest/user/login', login())</code></pre>
-                </div>
-                <div class="diff-panel">
-                    <div class="diff-panel-header after">✅ Fixed</div>
-                    <pre>
+            </div>
+
+            <div class="diff-panel">
+                <div class="diff-panel-header after">✅ Fixed</div>
+                <pre>
 <code class="fix">import rateLimit from 'express-rate-limit'
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000,
   max: 10,
   message: 'Too many login attempts',
   standardHeaders: true,
@@ -968,11 +994,11 @@ app.post(
   loginLimiter,
   login()
 )</code></pre>
-                </div>
             </div>
-
         </div>
+
     </div>
+</div>
 
     <!-- ════════════════════════════════════════════════════════════ -->
     <!-- VULN 04 — WEAK HASHING -->
