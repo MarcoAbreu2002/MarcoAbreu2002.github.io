@@ -1158,10 +1158,6 @@ export const verifyPassword = async (plain: string, stored: string) =>
 <code class="comment"># Valid email — hash comparison runs, slightly slower</code>
 <code class="pass">POST /rest/user/login  →  401  |  Response time: ~38ms  (email found, wrong password)</code></pre>
 
-            <div class="screenshot">
-                <div class="screenshot-label">📸 Screenshot — Burp Suite Intruder results sorted by response time, revealing valid email addresses</div>
-                <img src="images/enum-burp-timing.png" alt="enum-burp-timing.png" style="width:100%;display:block;">
-            </div>
 
             <h3 style="margin-top:28px;">How to Fix</h3>
             <p>Always run the password comparison regardless of whether the email was found, using a pre-computed dummy hash. This makes the response time constant for both valid and invalid email addresses.</p>
@@ -1262,7 +1258,7 @@ const DUMMY_HASH = await bcrypt.hash('dummy', 12)
 
             <div class="screenshot">
                 <div class="screenshot-label">📸 Screenshot — Replaying a logged-out JWT token and receiving a successful authenticated response</div>
-                <img src="images/jwt-replay-success.png" alt="jwt-replay-success.png" style="width:100%;display:block;">
+                <img src="../images/jwt.png" alt="jwt-replay-success.png" style="width:100%;display:block;">
             </div>
 
             <h3 style="margin-top:28px;">How to Fix</h3>
@@ -1350,7 +1346,7 @@ if (await redis.get(jti)) {
 
     <br>
     <div style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted);padding:20px 0;border-top:1px solid var(--text-muted);margin-top:20px;">
-        📁 &nbsp;<a href="https://github.com/MarcoAbreu2002" style="color:var(--accent-color);text-decoration:none;">github.com/MarcoAbreu2002</a>
+        📁 &nbsp;<a href="https://github.com/MarcoAbreu2002/MarcoAbreu2002.github.io/tree/main/projects/Owasp-Juice-Shop" style="color:var(--accent-color);text-decoration:none;">github.com/MarcoAbreu2002</a>
         &nbsp;·&nbsp;
         <span>OWASP Juice Shop — Login Security Audit &copy; 2026</span>
     </div>
