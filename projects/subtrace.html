@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subtrace v2 | Attack Surface Mapper | Marco Abreu</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* Extra styling for project page */
+        .features-list, .installation-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .features-list li::before {
+            content: "▹";
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+        .installation-list li::before {
+            content: "💻";
+            margin-right: 8px;
+        }
+        pre {
+            background: #112240;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        pre code.command { color: #64ffda; font-weight: bold; }
+        pre code.input { color: #ffd86f; }
+        pre code.output { color: #00ffff; }
+        h3 { margin-top: 40px; }
+        .note {
+            background: rgba(100, 255, 218, 0.06);
+            border: 1px solid rgba(100, 255, 218, 0.25);
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin: 18px 0;
+        }
+        .note strong { color: #64ffda; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="../index.html">
+        <div class="logo">&lt;Marco Abreu /&gt;</div>
+    </a>
+
+    <ul class="nav-links">
+        <li><a href="../index.html#projects">← Back to Projects</a></li>
+    </ul>
+</nav>
+
+<section class="section">
+    <div class="container">
+
+        <h2 class="section-title">Subtrace v2 — Attack Surface Mapper</h2>
+
+        <p>
+            <strong>Subtrace v2</strong> is a reconnaissance and attack surface mapping tool developed in Python.
+            The main goal is to transform raw reconnaissance data into a structured view of a target’s exposure:
+            subdomains, endpoints, historical URLs, client-side routes extracted from JavaScript, and enriched metadata
+            such as reachability, technologies, and risk heuristics.
+        </p>
+
+        <div class="note">
+            <strong>Disclaimer:</strong> This tool is intended for <strong>authorized</strong> security testing and controlled environments only.
+            Passive data sources and generated queries must be used responsibly and according to their terms of service.
+        </div>
+
+        <h3>🎯 What Does Subtrace Do?</h3>
+        <p>
+            Subtrace runs a modular pipeline that combines <strong>passive discovery</strong>, <strong>live crawling</strong>,
+            <strong>JavaScript intelligence</strong>, <strong>technology fingerprinting</strong>, and <strong>risk scoring</strong>.
+            Results are stored in a graph model to enable reporting and exporting into formats useful for security analysis.
+        </p>
+
+        <h3>🧠 Use Cases</h3>
+        <ul class="features-list">
+            <li><strong>Bug bounty / asset mapping:</strong> Identify subdomains, endpoints, and interesting surfaces before testing.</li>
+            <li><strong>Red team recon:</strong> Build a structured map of reachable assets and high-signal endpoints (admin/upload/auth/debug).</li>
+            <li><strong>Blue team visibility:</strong> Identify exposed panels, misconfigured endpoints, and sensitive file patterns.</li>
+            <li><strong>Client-side recon:</strong> Analyze JavaScript to extract endpoints, routes, tokens, and suspicious patterns.</li>
+            <li><strong>Reporting:</strong> Produce an HTML report with distributions (origins, risks, technologies, reachability) for stakeholders.</li>
+            <li><strong>Graph analysis:</strong> Export to Neo4j (Cypher) for deeper investigation and relationship exploration.</li>
+        </ul>
+
+        <h3>🔐 Implemented Features</h3>
+        <ul class="features-list">
+            <li><strong>Passive discovery:</strong> crt.sh, AlienVault OTX, HackerTarget, and Wayback Machine.</li>
+            <li><strong>Async DNS resolution:</strong> Resolve subdomains to IPs and CNAME records.</li>
+            <li><strong>Subdomain reachability probe:</strong> HTTP/HTTPS probing with status code, final URL, server header.</li>
+            <li><strong>Live crawler:</strong> URL canonicalization, per-host rate limiting, robots.txt handling, depth/page limits.</li>
+            <li><strong>HTML parsing:</strong> Links, scripts, forms, and metadata extraction.</li>
+            <li><strong>JavaScript intelligence:</strong> Regex & AST extraction of routes/endpoints, token & websocket heuristics.</li>
+            <li><strong>Source map analysis:</strong> Extract routes from JavaScript sourcemaps (.map).</li>
+            <li><strong>Technology fingerprinting:</strong> Header/HTML/script/URL signatures (CDNs, frameworks, cloud providers, etc.).</li>
+            <li><strong>Risk scoring:</strong> Heuristic scoring of endpoints based on URL patterns and method usage.</li>
+            <li><strong>JS vulnerability scanning:</strong>
+                built-in heuristics + optional integration with external tools (Semgrep & TruffleHog).
+            </li>
+            <li><strong>Google dorks generator:</strong> Produces targeted search queries (no scraping).</li>
+            <li><strong>Exports:</strong> HTML, Markdown, JSON, CSV, Neo4j Cypher.</li>
+        </ul>
+
+        <h3>🏗️ How It Was Created (Architecture)</h3>
+        <p>
+            The project was implemented as a set of independent modules connected by a CLI orchestrator.
+            Each stage outputs structured data that is converted into nodes in an <strong>Attack Surface Graph</strong>.
+        </p>
+
+        <ul class="features-list">
+            <li><strong>Graph model:</strong> Nodes and edges are managed using a NetworkX MultiDiGraph abstraction.</li>
+            <li><strong>Discovery modules:</strong> Each passive provider returns sets of subdomains and/or URLs.</li>
+            <li><strong>Crawler engine:</strong> Uses async HTTP requests with canonicalization and extraction of assets.</li>
+            <li><strong>Heuristic analyzers:</strong> Risk scoring and fingerprinting add “meaning” to raw endpoints.</li>
+            <li><strong>Reporting layer:</strong> Exporters transform graph data into readable formats for security workflows.</li>
+        </ul>
+
+        <h3>📦 Installation</h3>
+        <ul class="installation-list">
+            <li>
+                Clone GitHub Repository:
+                <pre><code class="command">https://github.com/&lt;your-username&gt;/&lt;your-subtrace-repo&gt;</code></pre>
+            </li>
+
+            <li>
+                Create virtual environment and install requirements:
+                <pre><code class="command">python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </li>
+
+            <li>
+                Install missing dependencies used by optional modules (recommended):
+                <pre><code class="command">pip install aiosqlite esprima</code></pre>
+            </li>
+
+            <li>
+                (Optional) Install external scanners:
+                <pre><code class="command">pip install semgrep trufflehog</code></pre>
+            </li>
+
+            <li>
+                (Optional) Install Playwright for SPA scanning:
+                <pre><code class="command">pip install playwright
+playwright install</code></pre>
+            </li>
+
+            <li>
+                Run the tool:
+                <pre><code class="command">python3 main.py</code></pre>
+            </li>
+        </ul>
+
+        <h3>🖥️ Main Menu</h3>
+        <p>
+            Subtrace provides an interactive CLI with target selection, scanning modules, and export controls.
+            The crawler stage also displays a progress bar with visited/discovered counters.
+        </p>
+
+        <pre><code class="output">Attack Surface Mapper
+
+T  Set Target
+1  Passive Discovery (+DNS + probe)
+2  Live Crawling
+3  Playwright SPA Scan
+4  Historical URL Analysis
+5  Technology Fingerprinting
+6  Risk Analysis
+7  Run Full Pipeline
+8  Export Reports (HTML/MD/JSON/CSV/Neo4j)
+D  Google Dorks (generate links)
+S  Settings (Semgrep/TruffleHog)
+0  Exit</code></pre>
+
+        <h3>🚀 How to Use</h3>
+        <p>
+            A typical workflow is:
+        </p>
+        <ul class="features-list">
+            <li><strong>Set target</strong> (domain or URL)</li>
+            <li><strong>Run full pipeline</strong> to gather and enrich findings</li>
+            <li><strong>Export reports</strong> (HTML recommended)</li>
+            <li><strong>Optional:</strong> enable Semgrep/TruffleHog in settings for external JS scanning</li>
+        </ul>
+
+        <pre><code class="output">Select option: <code class="input">T</code>
+Target: <code class="input">example.com</code>
+
+Select option: <code class="input">7</code>
+Running passive discovery...
+Starting crawler...
+Crawling complete ... visited=300 discovered=...
+Detected technologies: ...
+Risk scoring applied to endpoints.</code></pre>
+
+        <h3>🧾 Reporting & Findings Distribution</h3>
+        <p>
+            Subtrace generates an HTML report designed to provide both a quick overview and actionable details.
+            The report includes:
+        </p>
+        <ul class="features-list">
+            <li><strong>KPIs:</strong> endpoints, subdomains, reachable assets, technologies, JS findings.</li>
+            <li><strong>Risk distribution:</strong> low/medium/high/critical breakdown.</li>
+            <li><strong>Provenance distribution:</strong> shows which findings originated from crawl vs discovered JS routes vs Wayback URLs.</li>
+            <li><strong>Subdomain reachability:</strong> DNS resolution + HTTP/HTTPS probe status in a table.</li>
+            <li><strong>JavaScript findings:</strong> heuristics + external scanner alerts with evidence.</li>
+            <li><strong>Google dorks:</strong> generated query links for manual investigation (no scraping).</li>
+        </ul>
+
+        <h3>🧪 JavaScript Vulnerability Scanning (Heuristics + External Tools)</h3>
+        <p>
+            During crawling, Subtrace collects JavaScript files and performs:
+        </p>
+        <ul class="features-list">
+            <li><strong>Built-in heuristics:</strong> hardcoded secrets, embedded JWTs, internal references, dangerous sinks (eval, innerHTML, etc.).</li>
+            <li><strong>Semgrep (optional):</strong> rule-based static analysis for JavaScript.</li>
+            <li><strong>TruffleHog (optional):</strong> secret detection on downloaded JS content.</li>
+        </ul>
+
+        <div class="note">
+            <strong>Note:</strong> These findings are <strong>indicators</strong> and require manual verification.
+            The goal is to surface high-signal leads quickly during reconnaissance.
+        </div>
+
+        <h3>📤 Export Formats</h3>
+        <ul class="features-list">
+            <li><strong>HTML:</strong> best for stakeholders and distribution overview</li>
+            <li><strong>JSON:</strong> structured output for tooling / automation</li>
+            <li><strong>Markdown:</strong> simple report output for notes</li>
+            <li><strong>CSV:</strong> endpoints table (risk/score/origin)</li>
+            <li><strong>Neo4j Cypher:</strong> import into Neo4j for graph exploration</li>
+        </ul>
+
+        <h3>🧩 Neo4j Integration (How to Read the Graph)</h3>
+        <p>
+            Subtrace exports a Cypher script (<code>subtrace_neo4j.cypher</code>) that can be imported into Neo4j.
+        </p>
+
+        <pre><code class="command">cypher-shell -a bolt://localhost:7687 -u neo4j -p yourpassword &lt; subtrace_neo4j.cypher</code></pre>
+
+        <p>
+            Example queries:
+        </p>
+        <pre><code class="command">MATCH (e:ENDPOINT)
+RETURN e.value, e.risk, e.score
+ORDER BY e.score DESC
+LIMIT 25;</code></pre>
+
+        <h3>✅ Summary</h3>
+        <p>
+            Subtrace v2 demonstrates end-to-end security tooling development:
+            async networking, parsing, graph modeling, heuristic analysis, and reporting.
+            The project was designed to be modular and extendable, allowing new data sources,
+            new extraction rules, and new scanners to be added with minimal disruption.
+        </p>
+
+    </div>
+</section>
+
+<footer>
+    <p>Marco Abreu &copy; 2026</p>
+</footer>
+
+</body>
+</html>
